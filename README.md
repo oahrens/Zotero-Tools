@@ -5,9 +5,9 @@ Tools for Zotero (citation and reference management software)
 <p><h3>The functions:</h3></p>
 	<p><h4>Adjust punctuation surrounding citation groups</h4></p>
 		<p>This function corrects spaces and punctuation before and after the citations in your text. You can switch between:</p>
-			<ul><li>This is a phenomenal, (1) and unbelivable sentence. (2) This is not.</li>
-				<li>This is a phenomenal,(1) and unbelivable sentence.(2) This is not.</li>
-				<li>This is a phenomenal(1), and unbelivable sentence(2). This is not.</li></ul>
+			<ul><li>This is a phenomenal, <sup>(1)</sup> and unbelivable sentence. <sup>(2)</sup> This is not.</li>
+	<li>This is a phenomenal,<sup>(1)</sup> and unbelivable sentence.<sup>(2)</sup> This is not.</li>
+				<li>This is a phenomenal<sup>(1)</sup>, and unbelivable sentence<sup>(2)</sup>. This is not.</li></ul>
 		<p>or</p>
 			<ul><li>This is a phenomenal, (Shakespeare 1565) and unbelivable sentence. (Raleigh 1554) This is not.</li>
 				<li>This is a phenomenal,(Shakespeare 1565) and unbelivable sentence.(Raleigh 1554) This is not.</li>
@@ -35,3 +35,19 @@ Tools for Zotero (citation and reference management software)
 				<li>short doi links</li></ul>
 <p><h3>The technique:</h3></p>
 <p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (I think any) numeric citation style. Some of them also work for author-year styles.</p>
+<p><h3>Installation:</h3></p>
+	<ol type="1"><li>Import all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
+	<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>
+		<li>Open a Windows explorer window and navigate to the folder where you have saved the Zotero Tools files.</li>
+		<li>Pull all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into the VBA editor window and let them fall on 'Normal' in the project explorer lefthand side in the editor.</li></ol>
+	<li>Save the modification of <i>Normal.dotm</i> by pressing Ctrl-S inside the editor.</li>
+	<li>Add a macro button to the Word ribbon (this must be done in Word's main window, not in the editor):</li>
+	<ol type="i"><li>Click File -&gt; Options -&gt; Customize Ribbon.</li>
+		<li>Under 'Choose commands from', click 'Macros'.</li>
+		<li>Click on 'Normal.ZtStart.Start'.</li>
+		<li>Under 'Customize the ribbon', click 'New Tab'.</li>
+		<li>Then click 'Rename' and type a name for your tab, for example 'Zotero Tools'.</li>
+		<li>Rename the automatically inserted new group: select it, click 'Rename' and type a name for your group, for example also 'Zotero Tools'.</li>
+		<li>Click Add.</li>
+		<li>Select the just inserted macro and click 'Rename' to choose an image for the macro and type the name you want, for example 'Run'.</li>
+		<li>Click 'OK' twice.</li></ol></ol>

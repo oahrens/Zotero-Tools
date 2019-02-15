@@ -51,3 +51,4 @@ Tools for Zotero (citation and reference management software)
 		<li>Click Add.</li>
 		<li>Select the just inserted macro and click 'Rename' to choose an image for the macro and type the name you want, for example 'Run'.</li>
 		<li>Click 'OK' twice.</li></ol></ol>
+<p><b>More informations you can find in the <i>ZtReadMe.txt</i> file.</b>

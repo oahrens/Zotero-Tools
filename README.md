@@ -9,6 +9,9 @@ Tools for Zotero (citation and reference management software)
 	<li>This is a phenomenal,<sup>(1)</sup> and unbelivable sentence.<sup>(2)</sup> This is not.</li>
 				<li>This is a phenomenal<sup>(1)</sup>, and unbelivable sentence<sup>(2)</sup>. This is not.</li></ul>
 		<p>or</p>
+			<ul><li>This is a phenomenal, (1) and unbelivable sentence. (2) This is not.</li>
+                        	<li>This is a phenomenal (1), and unbelivable sentence (2). This is not.</li></ul>
+		<p>or</p>
 			<ul><li>This is a phenomenal, (Shakespeare 1565) and unbelivable sentence. (Raleigh 1554) This is not.</li>
 				<li>This is a phenomenal,(Shakespeare 1565) and unbelivable sentence.(Raleigh 1554) This is not.</li>
 				<li>This is a phenomenal (Shakespeare 1565), and unbelivable sentence (Raleigh 1554). This is not.</li></ul>
@@ -26,7 +29,7 @@ Tools for Zotero (citation and reference management software)
 		<p>This function sets internal links between citations and bibliography (i.e. hyperlinks inside the document). These links can be:</p>
 			<ul><li>unidirectional, i.e. the citation inside the text is hyperlinked to its reference in the bibliography</li></ul>
 		<p>or</p>
-			<ul><li>bidirectional, i.e. the reference in the bibliography is also hyperlinked to all its citations in the text</li></ul>
+			<ul><li>bidirectional, i.e. the reference in the bibliography is also hyperlinked to all its citations in the text. This is very helpful during the writing process of a publication.</li></ul>
 		<p>This function also involves an undo function.</p>
 	<p><h4>Set web links in references</h4></p>
 		<p>This function sets hyperlinks on web addressed in Zotero-generated bibliographies. It works for following address formats:</p>
@@ -34,7 +37,7 @@ Tools for Zotero (citation and reference management software)
 				<li>doi links</li>
 				<li>short doi links</li></ul>
 <p><h3>The technique:</h3></p>
-<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (I think any) numeric citation style. Some of them also work for author-year styles.</p>
+<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them also work for author-year styles.</p>
 <p><h3>Installation:</h3></p>
 	<ol type="1"><li>Import all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
 	<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>

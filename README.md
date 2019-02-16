@@ -6,15 +6,15 @@ Tools for Zotero (citation and reference management software)
 	<p><h4>Adjust punctuation surrounding citation groups</h4></p>
 		<p>This function corrects spaces and punctuation before and after the citations in your text. You can switch between:</p>
 			<ul><li>This is a phenomenal, <sup>(1)</sup> and unbelivable sentence. <sup>(2)</sup> This is not.</li>
-	<li>This is a phenomenal,<sup>(1)</sup> and unbelivable sentence.<sup>(2)</sup> This is not.</li>
-				<li>This is a phenomenal<sup>(1)</sup>, and unbelivable sentence<sup>(2)</sup>. This is not.</li></ul>
+			<li>This is a phenomenal,<sup>(1)</sup> and unbelivable sentence.<sup>(2)</sup> This is not.</li>
+			<li>This is a phenomenal<sup>(1)</sup>, and unbelivable sentence<sup>(2)</sup>. This is not.</li></ul>
 		<p>or</p>
 			<ul><li>This is a phenomenal, (1) and unbelivable sentence. (2) This is not.</li>
-                        	<li>This is a phenomenal (1), and unbelivable sentence (2). This is not.</li></ul>
+			<li>This is a phenomenal (1), and unbelivable sentence (2). This is not.</li></ul>
 		<p>or</p>
 			<ul><li>This is a phenomenal, (Shakespeare 1565) and unbelivable sentence. (Raleigh 1554) This is not.</li>
-				<li>This is a phenomenal,(Shakespeare 1565) and unbelivable sentence.(Raleigh 1554) This is not.</li>
-				<li>This is a phenomenal (Shakespeare 1565), and unbelivable sentence (Raleigh 1554). This is not.</li></ul>
+			<li>This is a phenomenal,(Shakespeare 1565) and unbelivable sentence.(Raleigh 1554) This is not.</li>
+			<li>This is a phenomenal (Shakespeare 1565), and unbelivable sentence (Raleigh 1554). This is not.</li></ul>
 	<p><h4>Join citation groups</h4></p>
 		<p>This function joins citation groups, inside the whole document or in a selected range of the document:<br>
 			<ul><li>The first sentence.[1], [2], [3] The next sentence.</li></ul>
@@ -23,8 +23,8 @@ Tools for Zotero (citation and reference management software)
 	<p><h4>Resolve unreachable citation groups</h4></p>
 		<p>This function resolves copy-pasted Zotero citations to clear readable text in parts of the document Zotero doesn't deal with, i.e.</p>
 			<ul><li>comments</li>
-				<li>headers</li>
-				<li>footers</li></ul>
+			<li>headers</li>
+			<li>footers</li></ul>
 	<p><h4>Set internal linking between citations and references</h4></p>
 		<p>This function sets internal links between citations and bibliography (i.e. hyperlinks inside the document). These links can be:</p>
 			<ul><li>unidirectional, i.e. the citation inside the text is hyperlinked to its reference in the bibliography</li></ul>
@@ -37,15 +37,19 @@ Tools for Zotero (citation and reference management software)
 				<li>doi links</li>
 				<li>short doi links</li></ul>
 <p><h3>The technique:</h3></p>
-<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them also work for author-year styles.</p>
+	<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them also work for author-year styles.</p>
 <p><h3>Installation:</h3></p>
 	<ol type="1"><li>Import all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
-	<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>
+		<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>
 		<li>Open a Windows explorer window and navigate to the folder where you have saved the Zotero Tools files.</li>
 		<li>Pull all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into the VBA editor window and let them fall on 'Normal' in the project explorer lefthand side in the editor.</li></ol>
 	<li>Save the modification of <i>Normal.dotm</i> by pressing Ctrl-S inside the editor.</li>
+	<li>Copy the following files into the <i>Normal.dotm</i> directory: <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i>.</li>
+		<ol type="i"><li>The directory of the <i>Normal.dotm</i> file should be C:\Users\[username]\AppData\Roaming\Microsoft\Templates (Windows 7 and following OS versions).</li>
+		<li>For Windows XP the directory is C:\Documents and Settings\[username]\Application Data\Microsoft\Templates.</li>
+		<li>If you can't find the AppData directory it may be hidden. Have a look at <a href="https://www.wordfast.net/wiki/How_to_make_hidden_folders_visible_in_Windows">this side</a>.</li></ol>
 	<li>Add a macro button to the Word ribbon (this must be done in Word's main window, not in the editor):</li>
-	<ol type="i"><li>Click File -&gt; Options -&gt; Customize Ribbon.</li>
+		<ol type="i"><li>Click File -&gt; Options -&gt; Customize Ribbon.</li>
 		<li>Under 'Choose commands from', click 'Macros'.</li>
 		<li>Click on 'Normal.ZtStart.Start'.</li>
 		<li>Under 'Customize the ribbon', click 'New Tab'.</li>

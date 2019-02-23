@@ -1,7 +1,7 @@
 # Zotero-Tools
 Tools for Zotero (citation and reference management software).
 
-<p>Zotero Tools involve a bunch of functions I'm missing in Zotero. I've found some hints and VBA scripts in the internet to solve my problems. They worked more or less reliable and I've not been satisfied in every case. So I've desided to bundle some of these ideas and complete them to one tool. And these are Zotero Tools!</p>
+<p>Zotero Tools involve a bunch of functions I'm missing in Zotero. I've found some hints and VBA scripts in the internet to solve my problems. They worked more or less reliable and I've not been satisfied in every case. So I've decided to bundle some of these ideas and complete them to one tool. And these are Zotero Tools!</p>
 <p><h3>The functions:</h3></p>
 	<p><h4>Adjust punctuation surrounding citation groups</h4></p>
 		<p>This function corrects spaces and punctuation before and after the citations in your text. You can switch between:</p>

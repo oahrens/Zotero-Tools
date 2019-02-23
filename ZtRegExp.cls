@@ -223,11 +223,11 @@ Friend Function Debugging(ByVal valMatch As ZtRegMatch, ByVal valRange As Word.R
         .Append "'"
         .Append vbNewLine
         .Append vbNewLine
-        .Append "With 'Disable' this debug information won't be shown anymore, otherwise procede or cancel."
+        .Append "With 'Suppress' this debug information won't be shown anymore, otherwise procede or cancel."
       Next
     End With
-    locResult = pvtMessageDisplay.Show(locMessageText.ToString, MessageOkDisableCancel + MessageInformation, True, valRange)
-    If locResult = MessageDisable Then
+    locResult = pvtMessageDisplay.Show(locMessageText.ToString, MessageOkSuppressCancel + MessageInformation, True, valRange)
+    If locResult = MessageSuppress Then
       pvtDebugging = False
       locResult = MessageOk
     End If

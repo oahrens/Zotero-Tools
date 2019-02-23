@@ -89,7 +89,7 @@ Private Sub UserForm_Initialize()
   
   Set pvtAppPrepare = New ZtAppPreparer
   Set pvtMessageDisplay = New ZtMessageDisplay
-  pvtMessageDisplay.Initialize InformationBox, ProcedureProcedeButton, ProcedureCancelButton, ProcedureDisableButton, pvtAppPrepare
+  pvtMessageDisplay.Initialize InformationBox, ProcedureProcedeButton, ProcedureCancelButton, ProcedureSuppressButton, pvtAppPrepare
   pvtMessageDisplay.Clear
   
   Set pvtWordInvisibleCheck = New ZtCheckBox

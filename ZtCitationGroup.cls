@@ -259,11 +259,11 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
             If pvtStory.Document.ShowManualAdjustation Then
               ' Disturbing comments or fields.
               locResult = pvtMessageDisplay.Show("The selected citation group must be changed manually!" & vbNewLine & vbNewLine & _
-                                                   "With 'Disable' this error won't be shown anymore, otherwise procede or cancel.", _
-                                                 MessageExclamation + MessageOkDisableCancel, _
+                                                   "With 'Suppress' this error won't be shown anymore, otherwise procede or cancel.", _
+                                                 MessageExclamation + MessageOkSuppressCancel, _
                                                  True, _
                                                  locCompleteRange)
-              If locResult = MessageDisable Then
+              If locResult = MessageSuppress Then
                 pvtStory.Document.ShowManualAdjustation = False
                 locResult = MessageOk
               End If

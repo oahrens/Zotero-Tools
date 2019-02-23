@@ -247,10 +247,10 @@ Friend Function SetInternalLinking() As ZtFMessageType
     ElseIf pvtBibliography.ShowNoCitationError Then
       locResult = pvtMessageDisplay.Show("I couldn't find any citations of the selected reference." & vbNewLine & vbNewLine & _
                                            "You may procede, otherwise cancel.", _
-                                         MessageCritical + MessageOkDisableCancel, _
+                                         MessageCritical + MessageOkSuppressCancel, _
                                          True, _
                                          locRange)
-      If locResult = MessageDisable Then
+      If locResult = MessageSuppress Then
         pvtBibliography.ShowNoCitationError = False
         locResult = MessageOk
       End If

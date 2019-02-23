@@ -42,8 +42,8 @@ Public Enum ZtFMessageType
   MessageOk = 1
   MessageCancel = 2
   MessageOkCancel = 3
-  MessageDisable = 4
-  MessageOkDisableCancel = 7
+  MessageSuppress = 4
+  MessageOkSuppressCancel = 7
   MessageNo = 8
   MessageInformation = 16
   MessageQuestion = 32

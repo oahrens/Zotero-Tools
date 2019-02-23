@@ -35,7 +35,7 @@ Private Const PVT_SOUND_INFORMATION As String = ".Default"
 Private pvtTextBox As MSForms.TextBox
 Private WithEvents pvtProcedeButton As MSForms.CommandButton
 Private WithEvents pvtCancelButton As MSForms.CommandButton
-Private WithEvents pvtDisableButton As MSForms.CommandButton
+Private WithEvents pvtSuppressButton As MSForms.CommandButton
 Private pvtResult As ZtFMessageType
 Private pvtAppPrepare As ZtIAppPreparable
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -55,14 +55,14 @@ End Function
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
 Friend Sub Initialize(ByVal valTextBox As MSForms.TextBox, ByVal valProcedeButton As MSForms.CommandButton, _
-  Optional ByVal valCancelButton As MSForms.CommandButton = Nothing, Optional ByVal valDiableButton As MSForms.CommandButton = Nothing, _
+  Optional ByVal valCancelButton As MSForms.CommandButton = Nothing, Optional ByVal valSuppressButton As MSForms.CommandButton = Nothing, _
   Optional ByVal valAppPrepare As ZtIAppPreparable = Nothing)
 
   Set pvtAppPrepare = valAppPrepare
   Set pvtTextBox = valTextBox
   Set pvtProcedeButton = valProcedeButton
   Set pvtCancelButton = valCancelButton
-  Set pvtDisableButton = valDiableButton
+  Set pvtSuppressButton = valSuppressButton
   
 End Sub
 
@@ -104,8 +104,8 @@ Friend Function Show(ByVal valMessage As String, ByVal valType As ZtFMessageType
   If Not pvtCancelButton Is Nothing Then
     pvtCancelButton.Enabled = ((valType And MessageCancel) = MessageCancel)
   End If
-  If Not pvtDisableButton Is Nothing Then
-    pvtDisableButton.Enabled = ((valType And MessageDisable) = MessageDisable)
+  If Not pvtSuppressButton Is Nothing Then
+    pvtSuppressButton.Enabled = ((valType And MessageSuppress) = MessageSuppress)
   End If
   
   ' Wait for user reaction.
@@ -152,9 +152,9 @@ Private Sub pvtCancelButton_Click()
   
 End Sub
 
-Private Sub pvtDisableButton_Click()
+Private Sub pvtSuppressButton_Click()
 
-  pvtResult = MessageDisable
+  pvtResult = MessageSuppress
   pvtEnableProcedureControls False
   
 End Sub
@@ -171,8 +171,8 @@ Private Sub pvtEnableProcedureControls(ByVal valEnable As Boolean)
   If Not pvtCancelButton Is Nothing Then
     pvtCancelButton.Enabled = valEnable
   End If
-  If Not pvtDisableButton Is Nothing Then
-    pvtDisableButton.Enabled = valEnable
+  If Not pvtSuppressButton Is Nothing Then
+    pvtSuppressButton.Enabled = valEnable
   End If
   DoEvents
   

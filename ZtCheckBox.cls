@@ -43,7 +43,6 @@ Friend Sub Initialize(ByVal valCheckBox As MSForms.CheckBox, ByVal valCallbackPr
   Set pvtCheckBox = valCheckBox
   Set pvtControl = valCheckBox
   pvtCallbackProperty = valCallbackProperty
-  Debug.Print
   If UBound(refDependentCheckBoxes) >= LBound(refDependentCheckBoxes) Then ' Not IsMissing(valDependentCheckBoxes) works too, unrespected what MS says.
     ReDim pvtDependentCheckBoxes(UBound(refDependentCheckBoxes))
     For locCtr = 0 To UBound(refDependentCheckBoxes)

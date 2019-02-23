@@ -1,0 +1,920 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<zoteroTools>
+
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--YOU CAN EDIT THIS PART OF THE CONFIGURATION FOR YOUR PURPOSE.-->
+	<user>
+		<!--
+			PLEASE, READ ZtReadMe.txt BEFORE EDITING THE CONFIGURATION!
+
+			General macro setting can be done under 'macro' below,
+			i.e for choosing a specific journal style, set macro.stylePresetName to one of the predefined journal styles.
+
+			Each journal style in turn six types of grouped presets are related to. These groups are:
+				- citation group style, i.e. '[1-3, 7]'.
+				- citation group punctuation style, i.e. 'The sentence.[1]' vs. 'The sentence [1].'
+				- citation style, i.e. '1', '3', or '7' in '[1-3, 7]'.
+				- Resolve citation style, i.e. how citations not reachable for Zotero are resolved into clear text.
+				- reference style, i.e. each reference in the bibliography.
+				- Backward linking style, i.e. style of linking from reference/bibliography to each citation.
+
+			For defining your own journal style:
+				- make your own composition of the grouped presets below
+				- give your composition a unique name
+				- set macro.stylePresetName to this unique name
+
+			If none of the grouped presets of a specific type doesn't fit on your journal define your own presets of this group.
+			ALL STRING VARIABLES NAMED AS '...RegString' MUST BE WRITTEN IN REGEX SYNTAX! PLEASE READ THE SHORT REGEX INTRODUCTION IN ZtReadMe.txt.
+
+			In the beginning and after you've changed configuration setting for your own purpose you should switch on debug mode
+			under macro.debug: then the different procedures show how your settings are applied to the document
+			and you get informations for correcting the settings where appropriate.
+		-->
+
+
+
+		<!--
+			GENERAL MACRO BEHAVIOUR.
+			Used by all procedures.
+			These settings are the default settings when the macro has been started. All of them can be changed while the macro is running.
+			Usage and meaning:
+				- stylePresetName: Choose your journal style here.
+								Predefined styles are 'Paediatrica CH', 'American Chemical Society', 'American Medical Association', 'IEEE',
+													  'National Library of Medicine', 'Nature', 'Lancet', 'New England Journal of Medicine', 'BMJ', 'Vancouver'
+				- wordIsInvisibleWhileOperation: True is a little bit faster.
+				- debug: True shows you the hits of each regex in detail. macro.wordIsInvisibleWhileOperation will be inactivated.
+				- citationInsertZeroWidthSpace: Word doesn't allow full hyperlink functionality if we hyperlinked a single digit citation
+										which is the first character in the group. E.g. in '1-3, 5' one can link '3' and '5' without problems, but the linked '1'
+										doesn't work as expected. If you set this option to 'True', the macro automatically inserts a zero width space in front of
+										the '1' and the hyperlink will work fine. This procedure has one disadvantage: Zotero's refresh command will recognize this
+										invisible change in the citation text and ask you, whether you allow Zotero to redo this change (deleting the zero width
+										space) or whether it should exclude this citation for the future. ALWAYS ANSWER THIS QUESTION WITH 'NO'! (which means
+										that Zotero will delete this zero width space and maintains the citation).
+										The value of macro.citationInsertZeroWidthSpace has no influence and Word has no hyperlink problem under 3 circumstances:
+											- you have chosen a citation style with minimum 2 characters for each citation, e.g. '[1]-[3], [5]' (this style has minimum 3 characters per citation)
+											- you have chosen a citation style with a citation group prefix, e.g. '[1-3, 5]'
+											- all cases where the first citation of a group has minimum 2 digits, e.g. '11-13, 15'
+				- withBackwardLinking: True = a backward link to each citation is inserted for each reference in the bibliography.
+											  The linking will be bidirectional from citation to reference and from reference to citations.
+									   False = the linking is only unidirectional from citation to reference.
+		-->
+		<macro>
+			<stylePresetName>Paediatrica CH</stylePresetName>
+			<wordIsInvisibleWhileOperation>false</wordIsInvisibleWhileOperation>
+			<debugging>true</debugging>
+			<citationInsertZeroWidthSpace>true</citationInsertZeroWidthSpace>
+			<withBackwardLinking>true</withBackwardLinking>
+		</macro>
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			JOURNAL SPECIFIC STYLE PRESETS.
+			Which preset is chosen depends on the value of macro.stylePresetName above.
+		-->
+		<stylePreset name="Paediatrica CH">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>1</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>1</referenceStyle>
+			<backwardLinkingStyle>1</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="American Chemical Society">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>2</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="American Medical Association">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>3</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>3</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="IEEE">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>2</punctuationStyle>
+			<citationStyle>4</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>7</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="National Library of Medicine">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>4</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="Nature">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>3</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>5</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="Lancet">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>6</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="New England Journal of Medicine">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>4</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="BMJ">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>2</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>6</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="Vancouver">
+			<!--This is a build-in preset.-->
+			<citationGroupStyle>3</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>2</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>4</referenceStyle>
+			<backwardLinkingStyle>2</backwardLinkingStyle>
+		</stylePreset>
+		<stylePreset name="Your journal style">
+			<!--You can arrange your first own preset here.-->
+			<citationGroupStyle>1</citationGroupStyle>
+			<punctuationStyle>1</punctuationStyle>
+			<citationStyle>1</citationStyle>
+			<resolveCitationStyle>1</resolveCitationStyle>
+			<referenceStyle>1</referenceStyle>
+			<backwardLinkingStyle>1</backwardLinkingStyle>
+		</stylePreset>
+
+		<!--
+			You can copy-paste more user defined presets here.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			CITATION GROUP STYLES.
+			Used by 'Set internal linking between citations and references' procedure.
+			The correct values for all settings are depending on the citation style used by Zotero.
+			Usage and meaning:
+				- rangeDelimiterRegString: the delimiter standing in between two single citations presenting a range, i.e. ' - ' in '[1] - [3]'.
+				- prefix: the prefix for a citation group as a whole, e.g. '[' in '[1-3]' and '' in '[1]-[3]'
+		-->
+		<citationGroupStyle name="1">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - any form of dash as range delimiter
+							 - no prefix for a citation group
+				Examples: '1-3' or '[1]-[3]' but not '[1-3]'
+				Style standards or journals used in: American Chemical Society, American Medical Association, IEEE, National Library of Medicine,
+													 Nature, Paediatrica CH, Lancet, New England Journal of Medicine
+			-->
+			<rangeDelimiterRegString>[\u002D\u2010\u2011\u2012\u2013\u2014]</rangeDelimiterRegString>
+			<prefix></prefix>
+		</citationGroupStyle>
+		<citationGroupStyle name="2">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - any form of dash as range delimiter
+							 - squared bracket open is the prefix of a citation group
+				Example: '[1-3]' but not '[1]-[3]'
+				Style standards or journals used in: BMJ
+			-->
+			<rangeDelimiterRegString>[\u002D\u2010\u2011\u2012\u2013\u2014]</rangeDelimiterRegString>
+			<prefix>[</prefix>
+		</citationGroupStyle>
+		<citationGroupStyle name="3">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - any form of dash as range delimiter
+							 - left parenthesis is the prefix of a citation group
+				Example: '(1-3)' but not '(1)-(3)'
+				Style standards or journals used in: Vancouver
+			-->
+			<rangeDelimiterRegString>[\u002D\u2010\u2011\u2012\u2013\u2014]</rangeDelimiterRegString>
+			<prefix>(</prefix>
+		</citationGroupStyle>
+		<citationGroupStyle name="4">
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.citationGroupStyle to '4'.
+				Description: ...
+				Example: ...
+				Style standards or journals used in: ...
+			-->
+			<rangeDelimiterRegString></rangeDelimiterRegString>
+			<prefix></prefix>
+		</citationGroupStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.citationGroupStyle in it to this citationGroupStyle name.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			CITATION GROUP PUNCTUATION STYLES.
+			The values of all settings are controlling the action of 'Adjust punctuation surrounding citation groups'.
+			Usage and meaning:
+				- punctuationIsBefore: True: 'The sentence [1]. The next sentence.' will be changed to 'The sentence. [1] The next sentence.'.
+									   False: 'The sentence. [1] The next sentence.' will be changed to 'The sentence [1]. The next sentence.'.
+									   The punctuation surrounding a citation group won't be changed if it's already correct.
+				- spaceIsBefore: True: 'The sentence[1]. The next sentence.' will be changed to 'The sentence [1]. The next sentence.'.
+								 False: 'The sentence [1]. The next sentence.' will be changed to 'The sentence[1]. The next sentence.'.
+								 The spacing before a citation group won't be changed if it's already correct.
+		-->
+		<punctuationStyle name="1">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - punctuation before citation
+							 - no space before citation
+				Example: 'The first sentence.[1] The next sentence.'
+				Style standards or journals used in: Paediatrica CH, American Chemical Society, American Medical Association, National Library of Medicine,
+													 Lancet, New England Journal of Medicine, BMJ, Vancouver
+			-->
+			<punctuationIsBefore>true</punctuationIsBefore>
+			<spaceIsBefore>false</spaceIsBefore>
+		</punctuationStyle>
+		<punctuationStyle name="2">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - punctuation after citation
+							 - space before citation
+				Example: 'The first sentence [1]. The next sentence.'
+				Style standards or journals used in: IEEE
+			-->
+			<punctuationIsBefore>false</punctuationIsBefore>
+			<spaceIsBefore>true</spaceIsBefore>
+		</punctuationStyle>
+		<punctuationStyle name="3">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - punctuation after citation
+							 - no space before citation
+				Example: 'The first sentence[1]. The next sentence.'
+				Style standards or journals used in: Nature
+			-->
+			<punctuationIsBefore>false</punctuationIsBefore>
+			<spaceIsBefore>true</spaceIsBefore>
+		</punctuationStyle>
+		<punctuationStyle name="4">
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.punctuationStyle to '4'.
+				Description: ...
+				Example: ...
+				Style standards or journals used in: ...
+			-->
+			<punctuationIsBefore>false</punctuationIsBefore>
+			<spaceIsBefore>false</spaceIsBefore>
+		</punctuationStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.punctuationStyle in it to this punctuationStyle name.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			CITATION STYLES.
+			Used by 'Set internal linking between citations and references' procedure.
+			The correct values for all settings are depending on the citation style used by Zotero.
+			Usage and meaning:
+				10    or   12   or   14       in   [10-12, 14]
+				settings for this style:   prefix = ''      suffix = ''      localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+
+				10)   or   12)  or   14)      in   10)-12), 14
+				settings for this style:   prefix = ''      suffix = ')'     localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+
+				(10)  or  (12)  or  (14)      in   [(10)-(12), (14)]
+				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+
+				(10)                 or
+				(12: ch. B par. 2)   or
+				(14: suppl.)                  in   [(10), (12: ch. B par. 2), (14: suppl.)]
+				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = ':(?: ch\. [A-Z]| par\. \d+| suppl\.)+'     localizerIsBeforeSuffix = True
+										   better (more flexible) localizerRegString = ': [^\)]+'     (hits every character until the suffix character is found)
+
+			Any separators or range delimiters, e.g. ',' or '-' are not meant as part of the citation!
+			The localizer regex term is automatically handled as not mandatory by the macro.
+		-->
+		<citationStyle name="1">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for each single citation
+							 - right parenthesis is suffix for each single citation
+							 - ': ' before localizers
+							 - german abbreviated localizers
+							 - suffix (right parenthesis) after localizer
+				Example: '1), 3)-5), 7 Kap. 2)'
+				Style standards or journals used in: Paediatrica CH
+			-->
+			<prefix></prefix> <!-- *** -->
+			<suffix>)</suffix> <!-- *** -->
+			<localizerRegString>:(?:\u0020|\u00A0)(?:Kap\.|S\.|B\.|Sp\.|Abb\.|Fol\.|Nr\.|Z\.|Anm\.|op\.|Abs\.|Teil|Abschn\.|s\. v\.|Bd\.|V\.)[^\)]+</localizerRegString>
+			<localizerIsBeforeSuffix>true</localizerIsBeforeSuffix>
+		</citationStyle>
+		<citationStyle name="2">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for each single citation
+							 - no suffix for each single citation
+							 - no localizers
+				Examples: '1, 3-5, 7' or '[1,3-5,7]' or '(1,3-5,7)'
+				Style standards or journals used in: American Chemical Society, BMJ, National Library of Medicine, Nature, Vancouver, Lancet, New England Journal of Medicine
+			-->
+			<prefix></prefix> <!-- *** -->
+			<suffix></suffix> <!-- *** -->
+			<localizerRegString></localizerRegString> <!--not relevant-->
+			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix> <!--not relevant-->
+		</citationStyle>
+		<citationStyle name="3">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for each single citation
+							 - no suffix for each single citation
+							 - localizers enclosed in parenthesis
+							 - english abbreviated localizers not capitalized and without period
+				Example: '1,3-5,7(chap2)'
+				Style standards or journals used in: American Medical Association
+			-->
+			<prefix></prefix> <!-- *** -->
+			<suffix></suffix> <!-- *** -->
+			<localizerRegString>\((?:chap|p|bk|col|fig|fol|no|l|n|op|para|pt|sec|sv|vol|v)[^\)]+\)</localizerRegString>
+			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix> <!--not relevant-->
+		</citationStyle>
+		<citationStyle name="4">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - squared bracket open is prefix for each single citation
+							 - squared bracket close is suffix for each single citation
+							 - ', ' before localizers
+							 - english abbreviated localizers capitalized and with period following
+							 - suffix (squared bracket close) after localizer
+				Example: '[1], [3]-[5], [7, Chap. 2]'
+				Style standards or journals used in: IEEE
+			-->
+			<prefix>[</prefix> <!-- *** -->
+			<suffix>]</suffix> <!-- *** -->
+			<localizerRegString>,(?:\u0020|\u00A0)(?:Chap\.|p\.|Bk\.|Col\.|Fig\.|Fol\.|No\.|L\.|N\.|Op\.|Para\.|Pt\.|Sec\.|S\. v\.|Vol\.|V\.)[^\]]+</localizerRegString>
+			<localizerIsBeforeSuffix>true</localizerIsBeforeSuffix>
+		</citationStyle>
+		<citationStyle name="5">
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.citationStyle to '5'.
+				Description: ...
+				Example: ...
+				Style standards or journals used in: ...
+			-->
+			<prefix></prefix> <!-- *** -->
+			<suffix></suffix> <!-- *** -->
+			<localizerRegString></localizerRegString>
+			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix>
+		</citationStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.citationStyle in it to this citationStyle name.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			RESOLVE CITATIONS STYLES.
+			These settings are controlling the action of 'Resolve unreachable citation groups'.
+			The resolve citation function is only for your private purpose while developing the document.
+			It isn't meant to follow any official citation style.
+			Usage and meaning:
+				- maxNamesCt: How many authores or editors are cited. If more names exist, 'et al' will be appended.
+				- givenNameStyle: How the given names of authors and editors are cited. Can be one of:
+									- 'GivenNameNone': no given names are cited, family names only.
+									- 'GivenNameAbbreviated': the first letter of each given name is cited, i.e. 'AM' instead of 'Ann Mary' or 'Ann-Mary'.
+									- 'GivenNameFull': all given names are cited unbreviated.
+				- groupPrefix: This is the prefix for the resolved citation group as a whole.
+				- groupSuffix: This is the suffix for the resolved citation group as a whole.
+				- prefix: This is the prefix for each single citation in a resolved citation group.
+				- suffix: This is the suffix for each single citation in a resolved citation group.
+				- delimiter: This is the delimiter that will stand in beween the single citations in a resolved citation group.
+			Example:
+				If you would like to resolve the unreachable citations like [(citation1), (citation2)]
+				your have to set groupPrefix = '[', groupSuffix = ']', prefix = '(', Suffix = ')', and delimiter = ', '.
+		-->
+		<resolveCitationStyle name="1">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - only the first author or editor is cited
+							 - given names will be abbreviated
+							 - a group of citations will be enclosed in squared brackets
+							 - a single citation won't be affixed by anything
+							 - single citations inside a group will be separated by ' // '
+				Example: '[Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623. // citation2]
+			-->
+			<maxNamesCt>3</maxNamesCt>
+			<givenNameStyle>GivenNameAbbreviated</givenNameStyle>
+			<groupPrefix>[</groupPrefix>
+			<groupSuffix>]</groupSuffix>
+			<prefix></prefix>
+			<suffix></suffix>
+			<delimiter> // </delimiter>
+		</resolveCitationStyle>
+		<resolveCitationStyle name="2">
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.resolveCitationStyle to '2'.
+				Description: ...
+				Example: ...
+			-->
+			<maxNamesCt>0</maxNamesCt>
+			<givenNameStyle>GivenNameNone</givenNameStyle>
+			<groupPrefix></groupPrefix>
+			<groupSuffix></groupSuffix>
+			<prefix></prefix>
+			<suffix></suffix>
+			<delimiter></delimiter>
+		</resolveCitationStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.resolveCitationStyle in it to this resolveCitationStyle name.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			REFERENCE STYLES.
+			Used by 'Set internal linking between citations and references' and 'Remove internal linking between citations and references' procedures.
+			The correct value for the all setting depends on the reference (bibliography) style used by Zotero:
+			Usage and meaning:
+				- numberPrefix: i.e. '\[' in '[1] Shakespeare, William: Donald and Milanea.'.
+				- numberSuffix: i.e. '\]' in '[1] Shakespeare, William: Donald and Milanea.'.
+								The space after ']' isn't part of the suffix.
+				- referenceNormalSuffix: i.e. the last '.' in '[1] Shakespeare, William: Donald and Milanea.'.
+				- all the following 'AtEnd' variables are only at interest, if a hyperlink, doi, or accessed clause can be the last clause of a reference for the chosen style:
+					- referenceHyperlinkAtEndSuffix: i.e. the last '.' in '[1] Shakespeare, William: Donald and Milanea. http:\\example.com.'.
+					- referenceAccessedAtEndSuffix: i.e. the last '.' in '[1] Shakespeare, William: Donald and Milanea. http:\\example.com. (Accessed 2011/12/13).'.
+					- accessedAtEndPrefix: i.e. '(Accessed' in '[1] Shakespeare, William: Donald and Milanea. http:\\example.com. (Accessed 2011/12/13).'.
+										   The space before '(' isn't part of the suffix.
+					- accessedAtEndSuffix: i.e. ')' in '[1] Shakespeare, William: Donald and Milanea. http:\\example.com. (Accessed 2011/12/13).'.
+		-->
+		<referenceStyle name="1"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for the reference number
+							 - right parenthesis is suffix of the reference number
+							 - the reference is terminated by a period, unless it ends with a web link or doi
+							 - an accessed clause may stand at the end of a reference and looks like '[accessed 2019-10-01]'
+				Example: '1)  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: Paediatrica CH
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix>)</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix></referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix></referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>[accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix>]</accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="2"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - the reference number is enclosed in parenthesis
+							 - the reference is terminated by a period
+							 - an accessed clause may stand at the end of a reference and looks like '(accessed 2019-10-01)'
+				Example: '(1)  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: American Chemical Society
+			-->
+			<numberPrefix>(</numberPrefix>
+			<numberSuffix>)</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix>.</referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix>.</referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>(accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix>)</accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="3"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix of the reference number
+							 - a period is suffix of the reference number
+							 - the reference is terminated by a period, unless it ends with a web link or doi
+							 - an accessed clause may stand at the end of a reference and looks like 'Accessed 2019-10-01'
+				Example: '1.  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: American Medical Association
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix>.</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix></referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix>.</referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>Accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix></accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="4"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for the reference number
+							 - a period is suffix of the reference number
+							 - the reference is terminated by a period, unless it ends with a web link or doi
+							 - no accessed clause is standing at the end of a reference
+				Example: '1.  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: National Library of Medicine, New England Journal of Medicine, Vancouver
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix>.</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix></referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix></referenceAccessedAtEndSuffix> <!--not relevant-->
+			<accessedAtEndPrefix></accessedAtEndPrefix> <!--not relevant-->
+			<accessedAtEndSuffix></accessedAtEndSuffix> <!--not relevant-->
+		</referenceStyle>
+		<referenceStyle name="5"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix for the reference number
+							 - a period is suffix of the reference number
+							 - the reference is terminated by a period, unless it ends with and accessed or cited clause
+							 - an accessed clause may stand at the end of a reference and looks like '(Accessed 2019-10-01)'
+				Example: '1.  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: Nature
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix>.</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix>.</referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix></referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>(Accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix>)</accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="6"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - no prefix or suffix of the reference number
+							 - the reference is terminated by a period
+							 - an accessed clause may stand at the end of a reference and looks like '(accessed 2019-10-01)'
+				Example: '1  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: BMJ, Lancet
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix></numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix>.</referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix>.</referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>(accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix>)</accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="7"> <!-- *** -->
+			<!--
+				This is a built-in style, don't change it!
+				Description: - the reference number is enclosed in sqared brackets
+							 - the reference is terminated by a period
+							 - an accessed clause may stand at the end of a reference and looks like '[Accessed 2019-10-01]'
+				Example: '[1]  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623.'
+				Style standards or journals used in: IEEE
+			-->
+			<numberPrefix>[</numberPrefix>
+			<numberSuffix>]</numberSuffix>
+			<referenceNormalSuffix>.</referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix>.</referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix>.</referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix>[Accessed</accessedAtEndPrefix>
+			<accessedAtEndSuffix>]</accessedAtEndSuffix>
+		</referenceStyle>
+		<referenceStyle name="8"> <!-- *** -->
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.referenceStyle to '8'.
+				Description: ...
+				Example: ...
+			-->
+			<numberPrefix></numberPrefix>
+			<numberSuffix></numberSuffix>
+			<referenceNormalSuffix></referenceNormalSuffix>
+			<referenceHyperlinkAtEndSuffix></referenceHyperlinkAtEndSuffix>
+			<referenceAccessedAtEndSuffix></referenceAccessedAtEndSuffix>
+			<accessedAtEndPrefix></accessedAtEndPrefix>
+			<accessedAtEndSuffix></accessedAtEndSuffix>
+		</referenceStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.referenceStyle in it to this referenceStyle name.
+		-->
+
+<!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
+
+		<!--
+			BACKWARD LINKING STYLES.
+			Used by 'Set internal linking between citations and references' procedure.
+			These settings are only in use, if backward linking is switched on in the macro settings above.
+			Usage and meaning:
+				- maxCaptionLevel: maximum caption level shown in the screen tip texts of the backward links for each reference.
+								   I.e. Word heading levels 1 to 9.
+				- hyperlinkStyleName: The name of a self defined (user defined) character style. Word build in style 'Hyperlink' doesn't work.
+				- delimiterBefore: i.e. the first '. ' in 'The reference. Cited on page 1, 5.'
+								   The space after the period is part of the delimiter.
+				- prefixSingular: i.e. 'Cited on page ' in 'The reference. Cited on page 1.'
+								  The space after 'page' is part of the prefix.
+				- prefixPlural: i.e. 'Cited on pages ' in 'The reference. Cited on pages 1, 5.'
+								The space after 'pages' is part of the prefix.
+				- delimiter: i.e. ', ' in 'The reference. Cited on page 1, 5.'
+							 The space after the comma is part of the delimiter.
+				- suffix: i.e. the last period in 'The reference. Cited on page 1, 5.'
+				- screenTipPattern: pattern of the screen tip texts of the backward links for each reference.
+									E.g. 'Page PageNr: Chapter CaptionNr, CaptionText' for
+										- 'Page 3: Chapter 1, Introduction' if the caption '1. Introduction' appears on page 3
+										- 'Page 54: Chapter 4.2, The evel in politics' if the caption '4.2 The evel in politics' appears on page 54.
+									The following placeholders can be used: 'PageNr', 'CaptionNr', 'CaptionText'. All other text stands for itself.
+		-->
+		<backwardLinkingStyle name="1">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - backward linking is in german
+							 - backward linking shows the topmost caption level in a german style in the screen tip text
+							 - backward linking uses an user defined Word character style named 'Hyperlink intern'
+				Example: '1)  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623. Zitiert auf Seite: 3, 20.'
+							  with screen tip text 'Abschnitt 1: Einführung'
+			-->
+			<maxCaptionLevel>1</maxCaptionLevel>
+			<hyperlinkStyleName>Hyperlink intern</hyperlinkStyleName>
+			<delimiterBefore>. </delimiterBefore> <!-- *** -->
+			<prefixSingular>Zitiert auf Seite: </prefixSingular> <!-- *** -->
+			<prefixPlural>Zitiert auf den Seiten: </prefixPlural> <!-- *** -->
+			<delimiter>, </delimiter>
+			<suffix>.</suffix> <!-- *** -->
+			<screenTipPattern>Abschnitt CaptionNr: CaptionText</screenTipPattern>
+		</backwardLinkingStyle>
+		<backwardLinkingStyle name="2">
+			<!--
+				This is a built-in style, don't change it!
+				Description: - backward linking is in english
+							 - backward linking shows the lowermost caption level in an english style in the screen tip text
+							 - backward linking uses an user defined Word character style named 'self-defined hyperlink style'
+				Example: '(1)  Shakespeare W. Comedies, Histories, & Tragedies [First Folio]. London 1623. Cited on page(s) 17, 20.'
+							   with screen tip text 'Section 2.3.4, The first folio and variants'
+			-->
+			<maxCaptionLevel>9</maxCaptionLevel>
+			<hyperlinkStyleName>Hyperlink intern</hyperlinkStyleName> <!--"self-defined hyperlink style"-->
+			<delimiterBefore>. </delimiterBefore>
+			<prefixSingular>Cited on page </prefixSingular> <!-- *** -->
+			<prefixPlural>Cited on pages </prefixPlural> <!-- *** -->
+			<delimiter>, </delimiter>
+			<suffix>.</suffix> <!-- *** -->
+			<screenTipPattern>Section CaptionNr, CaptionText</screenTipPattern>
+		</backwardLinkingStyle>
+		<backwardLinkingStyle name="3">
+			<!--
+				This can become your own style.
+				Edit this style for your purpose. Afterwards define your own journal style above and set stylePreset.backwardLinkingStyle to '3'.
+				Description: ...
+				Example: ...
+			-->
+			<maxCaptionLevel>0</maxCaptionLevel>
+			<hyperlinkStyleName></hyperlinkStyleName>
+			<delimiterBefore></delimiterBefore>
+			<prefixSingular></prefixSingular> <!-- *** -->
+			<prefixPlural></prefixPlural> <!-- *** -->
+			<delimiter></delimiter>
+			<suffix></suffix> <!-- *** -->
+			<screenTipPattern></screenTipPattern>
+		</backwardLinkingStyle>
+
+		<!--
+			You can copy-paste more user defined styles here.
+			Make your own journal style and set stylePreset.backwardLinkingStyle in it to this backwardLinkingStyle name.
+		-->
+	</user>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--PLEASE, DON'T EDIT THIS PART OF THE CONFIGURATION, EXCEPT YOU REALLY KNOW WHAT YOU ARE DOING.-->
+	<basic>
+		<macro>
+			<citationBookmarkPrefix>ZtCitation_</citationBookmarkPrefix>
+			<referenceBookmarkPrefix>ZtReference_</referenceBookmarkPrefix>
+			<backwardLinkingPageNrMarker>PageNr</backwardLinkingPageNrMarker>
+			<backwardLinkingCaptionNrMarker>CaptionNr</backwardLinkingCaptionNrMarker>
+			<backwardLinkingCaptionTextMarker>CaptionText</backwardLinkingCaptionTextMarker>
+			<doiResolver>https://doi.org/</doiResolver>
+		</macro>
+		<word>
+			<maxScreenTipTextLength>1024</maxScreenTipTextLength>
+			<cantHoldFieldStoryTypes>wdTextFrameStory</cantHoldFieldStoryTypes>
+			<multipleStoriesStoryTypes>wdEvenPagesHeaderStory,wdEvenPagesFooterStory,wdPrimaryHeaderStory,wdPrimaryFooterStory,wdFirstPageHeaderStory,wdFirstPageFooterStory</multipleStoriesStoryTypes>
+			<individuallyUpdateFieldStoryTypes>wdFootnotesStory,wdEndnotesStory,wdCommentsStory</individuallyUpdateFieldStoryTypes>
+		</word>
+		<zotero>
+			<citationGroupIdentifier>ADDIN ZOTERO_ITEM CSL_CITATION</citationGroupIdentifier>
+			<citationGroupPrefixIdentifier>&quot;citationItems&quot;:[</citationGroupPrefixIdentifier>
+			<citationGroupSuffixIdentifier>],&quot;schema&quot;:</citationGroupSuffixIdentifier>
+			<citationGroupDelimiter>,</citationGroupDelimiter>
+			<bibliographyIdentifier>ADDIN ZOTERO_BIBL</bibliographyIdentifier>
+			<canHoldCitationStoryTypes>wdMainTextStory,wdFootnotesStory,wdEndnotesStory</canHoldCitationStoryTypes>
+		</zotero>
+		<characters>
+			<punctuation>.,:;?!</punctuation>
+			<punctuationBreakField>.,:;?!&#10;{Chr(13)}{Chr(19)}{Chr(21)}</punctuationBreakField>
+			<zeroWidthSpace>&#8203;</zeroWidthSpace>
+			<noBreakSpace>&#160;</noBreakSpace>
+			<spaceWOZero> &#160;</spaceWOZero>
+			<space> &#160;&#8203;</space>
+			<spaceWOZeroPunctuation> &#160;.,:;?!</spaceWOZeroPunctuation>
+		</characters>
+		<patterns>
+			<punctuation>[.,:;?!]</punctuation>
+			<spaceWOZero>[ &#160;]</spaceWOZero>
+			<spaceWOZeroPunctuation>[ &#160;.,:;?!]</spaceWOZeroPunctuation>
+		</patterns>
+		<regPieces> <!-- ** -->
+			<punctuationPatternRegPiece>[.,:;?!]</punctuationPatternRegPiece>
+			<notPunctuationPatternRegPiece>[^.,:;?!]</notPunctuationPatternRegPiece>"
+			<notSpaceWOZeroPunctuationPatternRegPiece>[^\u0020\u00A0.,:;?!]</notSpaceWOZeroPunctuationPatternRegPiece>
+			<notSpaceWOZeroPunctuationBreakFieldPatternRegPiece>[^\u0020\u00A0.,:;?!\n\r\u0013\u0015]</notSpaceWOZeroPunctuationBreakFieldPatternRegPiece>
+			<notPunctuationBreakFieldPatternRegPiece>[^.,:;?!\n\r\u0013\u0015]</notPunctuationBreakFieldPatternRegPiece>
+			<zeroWidthSpaceRegPiece>\u200B</zeroWidthSpaceRegPiece>
+			<spacePatternRegPiece>[\u0020\u00A0\u200B]</spacePatternRegPiece>
+			<spaceWOZeroPatternRegPiece>[\u0020\u00A0]</spaceWOZeroPatternRegPiece>
+			<spaceWOZeroChoiceRegPiece>\u0020|\u00A0</spaceWOZeroChoiceRegPiece>
+			<whiteSpaceWOZeroPatternRegPiece>[\u0020\u00A0\t]</whiteSpaceWOZeroPatternRegPiece>
+			<spaceWOZeroCommaSemicolonPatternRegPiece>[\u0020\u00A0,;]</spaceWOZeroCommaSemicolonPatternRegPiece>
+			<spaceDashPatternRegPiece>[\u002D\u2010\u2011\u2012\u2013\u2014\u0020\u00A0]</spaceDashPatternRegPiece>
+			<notSpaceDashPatternRegPiece>[^\u002D\u2010\u2011\u2012\u2013\u2014\u0020\u00A0]</notSpaceDashPatternRegPiece>
+			<lineBreakChoiceRegPiece>\n|\r|\r\n</lineBreakChoiceRegPiece>
+			<httpDoiPrefixChoiceRegPiece>https?://|doi:[\u0020\u00A0\t]*?10\.\d{4,5}(?:\.\d{2})?/|short-?doi:</httpDoiPrefixChoiceRegPiece>
+			<!--Each list member may contain a citation number, errorneous nothing, or a reference error:-->
+			<commaSeparatedIntegerListRegPiece>.*?(?:, .*?)*</commaSeparatedIntegerListRegPiece>
+			<httpElementNameChoiceRegPiece>i|b|sub|sup|span</httpElementNameChoiceRegPiece>
+			<familyNameSuffixChoiceRegPiece>jr|sr|II|2nd|III|3rd|IV|4th</familyNameSuffixChoiceRegPiece>
+			<familyNameTheSuffixChoiceRegPiece>the|der|die</familyNameTheSuffixChoiceRegPiece>
+			<!--https://perishablepress.com/stop-using-unsafe-characters-in-urls/-->
+			<notUrlAllowedCharactersRegPiece>&quot; #&gt;&lt;\{\}\[\]\|\\\^~&apos;</notUrlAllowedCharactersRegPiece>
+			<notUrlAllowedPatternRegPiece>[^&quot; #&gt;&lt;\{\}\[\]\|\\\^~&apos;\n\r\t]</notUrlAllowedPatternRegPiece>
+			<notUrlEndAllowedPatternRegPiece>[^&quot; #&gt;&lt;\{\}\[\]\|\\\^~&apos;\.,;\n\r\t]</notUrlEndAllowedPatternRegPiece>
+			<!--www.doi.org/doi_handbook/2_Numbering.html#2.5-->
+			<notDoiAllowedCharactersRegPiece>\?</notDoiAllowedCharactersRegPiece>
+			<notDoiAllowedPatternRegPiece>[^&quot; #&gt;&lt;\{\}\[\]\|\\\^~&apos;\?\n\r\t]</notDoiAllowedPatternRegPiece>
+			<notDoiEndAllowedPatternRegPiece>[^&quot; #&gt;&lt;\{\}\[\]\|\\\^~&apos;\?\.,;\n\r\t]</notDoiEndAllowedPatternRegPiece>
+			<!--https://github.com/CrossRef/doi-destinations-RETIRED/blob/master/src/member_domains/lookup.clj-->
+			<shortDoiAllowedPatternRegPiece>[a-zA-Z0-9]</shortDoiAllowedPatternRegPiece>
+		</regPieces>
+	</basic>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--PLEASE, DON'T EDIT THIS PART OF THE CONFIGURATION, EXCEPT YOU REALLY KNOW WHAT YOU ARE DOING.-->
+	<!-- The following rules are used for regex string elements:
+			- Regex strings should be declared as CDATA to omit the confusing escape sequences.
+			- Tabs and line breaks will be ignored, but ANY SPACE CHARACTER WILL BE PRESERVED!
+			- You can refer to basic or user configuration from above by object dot syntax: {parent element name.child element name.value name}.
+				Parent element name has to be one of the following: 'basic' or 'user' (that means you have to omit XML root element 'zoteroTools').
+			- You can only refer to elements which are "regex safe"! These are:
+				- all elements that name ends on '...RegString'
+				- all elements marked with ** or ***
+				- all elements of groups marked with ** or ***
+			- Only in case of refering to one of the ** elements you have to append 'value' to the element name.
+			- Only in case of refering to one of the *** elements you have to append 'RegPiece.value' to the element name.
+			- Examples:
+				{basic.regPieces.punctuationPatternRegPiece.value} refers to '[.,:;?!]'.
+					The string is automatically transposed to '[\.,:;\?!]' to be usable in a regex.
+				{user.backwardLinkingStyle.prefixSingularRegPiece.value} refers to 'Zitiert auf Seite: ' or 'Cited on page ', depending on the chosen backward linking style.
+					The string also will be transposed where applicable.
+				{user.citationGroupStyle.rangeDelimiterRegString} will refere to e.g. '[\u002D\u2010\u2011\u2012\u2013\u2014]', depending on the chosen citation group style.
+			- Also one special regex string from 'final' can be referenced:
+				{final.reference.ReferenceUniversalSuffixChoiceRegString}
+	-->
+	<final>
+		<citation>
+			<resultRegString localizerIsBeforeSuffix="true"><![CDATA[
+				(?<numbering>{user.citationStyle.prefixRegPiece.value}
+					(?<number>\d+){user.citationStyle.suffixRegPiece.value}
+					(?:{user.citationStyle.localizerRegPiece.value})?)
+				(?<rangeDelimiter>{user.citationGroupStyle.rangeDelimiterRegPiece.value})?
+			]]></resultRegString>
+			<resultRegString localizerIsBeforeSuffix="false"><![CDATA[
+				(?<numbering>{user.citationStyle.prefixRegPiece.value}
+					(?<number>\d+)(?:{user.citationStyle.localizerRegPiece.value})?
+					{user.citationStyle.suffixRegPiece.value})
+				(?<rangeDelimiter>{user.citationGroupStyle.rangeDelimiterRegPiece.value})?
+			]]></resultRegString>
+
+			<htmlTagsRegString>
+				<!-- Thanks to MasterPiece for the idea: https://stackoverflow.com/questions/3790681/regular-expression-to-remove-html-tags/53708465#53708465.
+					We have to use it recursively for nested tags.
+					Warning on using regex on HTML ;-) https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags/1732454#1732454.
+				-->
+			<![CDATA[
+				(?:<({basic.regPieces.httpElementNameChoiceRegPiece.value})(?:\s+[^>]*)*>)
+				(?<replacement>(?:(?!<\1).)*)(?:</\1>)
+			]]></htmlTagsRegString>
+			<givenNameRegString><![CDATA[
+				(?:^|{basic.regPieces.spaceDashPatternRegPiece.value}+)
+				(?<initial>{basic.regPieces.notSpaceDashPatternRegPiece.value})
+				{basic.regPieces.notSpaceDashPatternRegPiece.value}*
+				(?:(?:{basic.regPieces.spacePatternRegPiece.value}+)
+					(?:(?:{basic.regPieces.familyNameTheSuffixChoiceRegPiece.value})
+						(?:{basic.regPieces.spacePatternRegPiece.value}+))?
+					(?:{basic.regPieces.familyNameSuffixChoiceRegPiece.value})\.?$)?
+			]]></givenNameRegString>
+		</citation>
+		<citationGroup>
+			<betweenDeleteRegString><![CDATA[
+				^{basic.regPieces.spaceWOZeroCommaSemicolonPatternRegPiece.value}+$
+			]]></betweenDeleteRegString>
+			<betweenDeleteMultipleSpaceRegString><![CDATA[
+				{basic.regPieces.spaceWOZeroPatternRegPiece.value}{2,}
+			]]></betweenDeleteMultipleSpaceRegString>
+			<betweenDeleteAffixedSpaceRegString><![CDATA[
+				^{basic.regPieces.spacePatternRegPiece.value}*(?<text>.*?){basic.regPieces.spacePatternRegPiece.value}*$
+			]]></betweenDeleteAffixedSpaceRegString>
+			<punctuationRegString surroundingSigns="3"><![CDATA[
+				^(?<signBefore>{basic.regPieces.notPunctuationBreakFieldPatternRegPiece.value})
+				(?<punctuationBefore>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<spaceBefore>{basic.regPieces.spaceWOZeroPatternRegPiece.value}*)
+				(?<citationGroup>.*?)
+				(?<punctuationAfter>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<signAfter>{basic.regPieces.notPunctuationBreakFieldPatternRegPiece.value})$
+			]]></punctuationRegString>
+			<punctuationRegString surroundingSigns="2"><![CDATA[
+				^(?<signBefore>)
+				(?<punctuationBefore>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<spaceBefore>{basic.regPieces.spaceWOZeroPatternRegPiece.value}*)
+				(?<citationGroup>.*?)
+				(?<punctuationAfter>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<signAfter>{basic.regPieces.notPunctuationBreakFieldPatternRegPiece.value})$
+			]]></punctuationRegString>
+			<punctuationRegString surroundingSigns="1"><![CDATA[
+				^(?<signBefore>{basic.regPieces.notPunctuationBreakFieldPatternRegPiece.value})
+				(?<punctuationBefore>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<spaceBefore>{basic.regPieces.spaceWOZeroPatternRegPiece.value}*)
+				(?<citationGroup>.*?)
+				(?<punctuationAfter>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<signAfter>)$
+			]]></punctuationRegString>
+			<punctuationRegString surroundingSigns="0"><![CDATA[
+				^(?<signBefore>)
+				(?<punctuationBefore>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<spaceBefore>{basic.regPieces.spaceWOZeroPatternRegPiece.value}*)
+				(?<citationGroup>.*?)
+				(?<punctuationAfter>{basic.regPieces.punctuationPatternRegPiece.value}*)
+				(?<signAfter>)$
+			]]></punctuationRegString>
+		</citationGroup>
+		<reference>
+			<wholeRegString><![CDATA[
+				^(?<numbering>{user.referenceStyle.numberPrefixRegPiece.value}
+					(?<number>\d+){user.referenceStyle.numberSuffixRegPiece.value}{basic.regPieces.whiteSpaceWOZeroPatternRegPiece.value}*)
+				(?<text>.+?)
+				(?:
+					(?<hyperlinkAtEnd>(?:{basic.regPieces.httpDoiPrefixChoiceRegPiece.value}){basic.regPieces.notUrlAllowedPatternRegPiece.value}+{basic.regPieces.notUrlEndAllowedPatternRegPiece.value})|
+						(?<accessedAtEnd>{user.referenceStyle.accessedAtEndPrefixRegPiece.value}.+?{user.referenceStyle.accessedAtEndSuffixRegPiece.value})
+				)?
+				(?<delimiterBeforeBackwardLinking>{final.reference.referenceUniversalSuffixChoiceRegString}(?:{basic.regPieces.spaceWOZeroChoiceRegPiece.value})?)?
+				(?<backwardLinking>(?:{user.backwardLinkingStyle.prefixSingularRegPiece.value}|{user.backwardLinkingStyle.prefixPluralRegPiece.value})
+					(?:{basic.regPieces.commaSeparatedIntegerListRegPiece.value})?{user.backwardLinkingStyle.suffixRegPiece.value})?$
+			]]></wholeRegString>
+			<webLinkRegString><![CDATA[
+				(?<link>
+					(?<httpLink>https?://{basic.regPieces.notUrlAllowedPatternRegPiece.value}+{basic.regPieces.notUrlEndAllowedPatternRegPiece.value})|
+					(?:doi(?::{basic.regPieces.whiteSpaceWOZeroPatternRegPiece.value}*|{basic.regPieces.whiteSpaceWOZeroPatternRegPiece.value}+)
+						(?<doiLink>10\.\d{4,9}(?:\.\d{2})*{basic.regPieces.notDoiAllowedPatternRegPiece.value}+{basic.regPieces.notDoiEndAllowedPatternRegPiece.value}))|
+					(?:(?:short-?doi|doi)(?::{basic.regPieces.whiteSpaceWOZeroPatternRegPiece.value}*|{basic.regPieces.whiteSpaceWOZeroPatternRegPiece.value}*)
+						(?<shortDoiLink>{basic.regPieces.shortDoiAllowedPatternRegPiece.value}+)))
+			]]></webLinkRegString>
+		</reference>
+	</final>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+</zoteroTools>

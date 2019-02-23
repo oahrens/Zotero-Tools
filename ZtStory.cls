@@ -357,7 +357,7 @@ Friend Sub JoinCitationGroups(ByRef refAffectedCt As Integer, ByRef refNotAffect
           If Not locCitationGroupIsFound Then
             locCitationGroupIsFound = True
             Set locInsertRemnantsRange = pvtCitationGroups(locCitationGroupCtr).ResultRange
-            locInsertRemnantsRange.Move wdCharacter, 1
+            locInsertRemnantsRange.SetRange pvtCitationGroups(locCitationGroupCtr - 1).ResultRange.End + 1, pvtCitationGroups(locCitationGroupCtr).CodeRange.Start - 1
           End If
           locBetweenText = locBetweenText & pvtCitationGroups(locCitationGroupCtr).JoinWithPrevious(False, refAffectedCt, 0)
         ElseIf pvtCitationGroups(locCitationGroupCtr - 1).ResultRange.Start < valRange.Start Then

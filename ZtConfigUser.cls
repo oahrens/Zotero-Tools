@@ -56,11 +56,12 @@ Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valXml As MSXML2.DOMDoc
 
 End Sub
 
-Friend Sub KeepUserStyles(ByVal valName As String)
+Friend Sub KeepUserStyles(ByVal valStylePresetName As String)
 
   Dim locPreset As ZtConfigUserStylePreset
   
-  Set locPreset = pvtConfig.UserStylePresets.Item(valName)
+  pvtMacro.StylePresetName = valStylePresetName
+  Set locPreset = pvtConfig.UserStylePresets.Item(pvtMacro.StylePresetName)
   
   ' Read citation group style.
   Set pvtCitationGroup = New ZtConfigUserCitationGroup

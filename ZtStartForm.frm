@@ -177,7 +177,7 @@ Private Sub StylePresetList_Change()
 
   On Error GoTo OnError
   
-  pvtConfig.KeepUserStyles StylePresetList.Value
+  pvtConfig.User.KeepUserStyles StylePresetList.Value
   pvtConfig.KeepFinal
   
   Exit Sub

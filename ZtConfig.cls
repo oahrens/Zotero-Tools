@@ -144,12 +144,6 @@ Friend Sub KeepUserStylePresets()
 
 End Sub
 
-Friend Sub KeepUserStyles(ByVal valName As String)
-  
-  pvtUser.KeepUserStyles valName
-  
-End Sub
-
 Friend Sub KeepFinal()
   
   Set pvtFinal = New ZtConfigFinal

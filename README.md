@@ -47,8 +47,8 @@ Tools for Zotero (citation and reference management software).
 	<li>Copy the following files into the <i>Normal.dotm</i> directory: <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i>.</li>
 	<ol type="i"><li>The directory of the <i>Normal.dotm</i> file should be:</i>
 		<ul><li>Windows 7 and following OS versions: C:\Users\[username]\AppData\Roaming\Microsoft\Templates</li>
-		<li>Windows XP: C:\Documents and Settings\[username]\Application Data\Microsoft\Templates.</li></ul>
-		<li>If you can't find the AppData directory it may be hidden. Have a look at <a href="https://www.wordfast.net/wiki/How_to_make_hidden_folders_visible_in_Windows">this side</a>.</li></ol>
+		<li>Windows XP: C:\Documents and Settings\[username]\Application Data\Microsoft\Templates</li></ul>
+	<li>If you can't find the <i>AppData</i> directory it may be hidden. Have a look at <a href="https://www.wordfast.net/wiki/How_to_make_hidden_folders_visible_in_Windows">this side</a>.</li></ol>
 	<li>Add a macro button to the Word ribbon (this must be done in Word's main window, not in the editor):</li>
 		<ol type="i"><li>Click File -&gt; Options -&gt; Customize Ribbon.</li>
 		<li>Under 'Choose commands from', click 'Macros'.</li>

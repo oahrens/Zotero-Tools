@@ -32,10 +32,10 @@ Tools for Zotero (citation and reference management software).
 			<ul><li>bidirectional, i.e. the reference in the bibliography is also hyperlinked to all its citations in the text. This is very helpful during the writing process of a publication.</li></ul>
 		<p>This function also involves an undo function.</p>
 	<p><h4>Set web links in references</h4></p>
-		<p>This function sets hyperlinks on web addressed in Zotero-generated bibliographies. It works for following address formats:</p>
-			<ul><li>http or https links</li>
-				<li>doi links</li>
-				<li>short doi links</li></ul>
+		<p>This function sets hyperlinks on URIs (uniform resource identifiers) in Zotero-generated bibliographies. It works for the following URI formats:</p>
+			<ul><li>http or https addresses (the scheme must be involved, e.g. 'http://www.example.com' but not 'www.example.com')</li>
+				<li>doi addresses (the scheme must be involved, e.g. 'doi:10.1234/5678' or 'doi: 10.1234/5678')</li>
+				<li>short doi addresses (the scheme must be involved, e.g. 'short-doi:abcde' or 'short-doi: abcde' or 'shortdoi:abcde' or 'shortdoi: abcde')</li></ul>
 <p><h3>The technique:</h3></p>
 	<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them also work for author-year styles.</p>
 <p><h3>Installation:</h3></p>

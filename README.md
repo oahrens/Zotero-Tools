@@ -37,7 +37,7 @@ Tools for Zotero (citation and reference management software).
 				<li>doi addresses (the scheme must be involved, e.g. 'doi:10.1234/5678' or 'doi: 10.1234/5678')</li>
 				<li>short doi addresses (the scheme must be involved, e.g. 'short-doi:abcde' or 'short-doi: abcde' or 'shortdoi:abcde' or 'shortdoi: abcde')</li></ul>
 <p><h3>The technique:</h3></p>
-	<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them also work for author-year styles.</p>
+	<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them do also work for author-year styles.</p>
 <p><h3>Installation:</h3></p>
 	<ol type="1"><li>Import all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
 		<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>

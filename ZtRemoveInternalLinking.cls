@@ -10,9 +10,14 @@ Attribute VB_Exposed = False
 Option Explicit
 Implements ZtIProcedure
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtRemoveInternalLinking.
 ' This is the 'Remove internal linking between citations and references' procedure.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -20,7 +25,6 @@ Implements ZtIProcedure
 ' Private variables.
 Private pvtName As String
 Private pvtDescription As String
-Private pvtFunctions As ZtProcedureFunctions
 Private pvtStepsCt As Integer
 Private pvtDocument As ZtDocument
 Private pvtToResume As Boolean
@@ -31,7 +35,6 @@ Private pvtToResume As Boolean
 ' Constructor.
 Private Sub Class_Initialize()
 
-  Set pvtFunctions = New ZtProcedureFunctions
   pvtName = "Remove internal linking between citations and references"
   pvtDescription = "This procedure removes all changes done by the procedure 'Set internal linking between citations and references'." & vbNewLine & vbNewLine & _
                      "This procedure is only working for numeric style citations. " & vbNewLine & vbNewLine & _
@@ -55,29 +58,13 @@ Private Property Get ZtIProcedure_Description() As String
   
 End Property
 
-Private Property Get ZtIProcedure_ProcedureFunctions() As ZtProcedureFunctions
+Private Function ZtIProcedure_Start(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valAppPrepare As ZtIAppPreparable, ByVal valProcedureInitializer As ZtIProcedureInitializable, _
+  ByVal valDocument As ZtDocument, ByRef refLicenseShown As Boolean) As ZtFMessageType
 
-  Set ZtIProcedure_ProcedureFunctions = Me.ProcedureFunctions
-  
-End Property
-
-Private Function ZtIProcedure_Start(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByRef refLicenceShown As Boolean) As ZtFMessageType
-
-  ZtIProcedure_Start = Me.Start(valConfig, valStartForm, valDocument, refLicenceShown)
+  ZtIProcedure_Start = Me.Start(valConfig, valMessageDisplay, valProgress, valAppPrepare, valProcedureInitializer, valDocument, refLicenseShown)
   
 End Function
-
-Private Sub ZtIProcedure_Prepare()
-
-  Me.Prepare
-  
-End Sub
-
-Private Sub ZtIProcedure_Unprepare()
-
-  Me.Unprepare
-  
-End Sub
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -96,39 +83,23 @@ Friend Property Get Description() As String
   
 End Property
 
-Friend Property Get ProcedureFunctions() As ZtProcedureFunctions
-
-  Set ProcedureFunctions = pvtFunctions
-  
-End Property
-
-Friend Function Start(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByRef refLicenceShown As Boolean) As ZtFMessageType
+Friend Function Start(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valAppPrepare As ZtIAppPreparable, ByVal valProcedureInitializer As ZtIProcedureInitializable, _
+  ByVal valDocument As ZtDocument, ByRef refLicenseShown As Boolean) As ZtFMessageType
 
   Dim locResult As ZtFMessageType
 
   Set pvtDocument = valDocument
-  locResult = pvtFunctions.Initialize(valConfig, valStartForm, pvtDocument, pvtName, refLicenceShown)
+  locResult = valProcedureInitializer.Start(valConfig, valMessageDisplay, valAppPrepare, pvtDocument, pvtName, refLicenseShown)
   If locResult = MessageOk Then
-    valStartForm.Progress.SetStepsCt pvtGetStepsCt
+    valProgress.SetStepsCt pvtGetStepsCt
     locResult = pvtDocument.RemoveInternalLinking
   End If
-  pvtFunctions.Finish locResult, , pvtToResume
+  valProcedureInitializer.Finish locResult, , pvtToResume
   
   Start = locResult
   
 End Function
-
-Friend Sub Prepare()
-
-  pvtFunctions.Prepare
-  
-End Sub
-
-Friend Sub Unprepare()
-
-  pvtFunctions.Unprepare
-  
-End Sub
 
 Friend Property Let ToResume(ByVal valToResume As Boolean)
 

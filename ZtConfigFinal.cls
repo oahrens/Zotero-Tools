@@ -9,11 +9,16 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtConfigFinal.
 ' It preserves final configuration informations and methods to read them from ZtConfig.xml.
 ' For this purpose it also applies settings from basic and user settings.
 ' It distributes these informations and work to the other ZtConfigFinal... classes.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 

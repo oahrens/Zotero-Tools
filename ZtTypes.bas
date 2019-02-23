@@ -1,10 +1,18 @@
 Attribute VB_Name = "ZTTypes"
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-' Enum definitions.
+' Type definitions.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+' Public enums.
 Public Enum ZtEGivenNameStyle
   GivenNameNone = 0
   GivenNameAbbreviated = 1
@@ -36,7 +44,7 @@ Public Enum ZtFMessageType
   MessageOkCancel = 3
   MessageDisable = 4
   MessageOkDisableCancel = 7
-  Messageno = 8
+  MessageNo = 8
   MessageInformation = 16
   MessageQuestion = 32
   MessageExclamation = 64
@@ -54,3 +62,5 @@ Public Enum ZtCBoolean
   CFalse = 0
   CTrue = 1
 End Enum
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+

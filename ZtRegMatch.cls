@@ -9,9 +9,14 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtRegMatch.
 ' It capsules VBScript match and enables named groups in VBScript regexp.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -42,7 +47,7 @@ Friend Sub Initialize(ByVal valGroups As Collection, ByVal valMatch As VBScript_
 
 End Sub
 
-' valGroupNameOrNr:
+' @valGroupNameOrNr:
 '  - 0 = the whole match
 '  - 1, 2, ... = the first, second, ... named or unnamed group of the match
 '  - 'group name' = the specified group of the match
@@ -50,7 +55,7 @@ Friend Property Get Groups(ByVal valGroupNameOrNr As Variant) As String
 
   Dim locRegGroup As ZtRegGroup
   Dim locGroupNameOrNr As Variant
-  
+
   locGroupNameOrNr = valGroupNameOrNr
   If locGroupNameOrNr Like pvtInternalNrPattern Then
     locGroupNameOrNr = Right$(locGroupNameOrNr, 1)
@@ -66,7 +71,7 @@ Friend Property Get Groups(ByVal valGroupNameOrNr As Variant) As String
   Else
     Groups = pvtMatch.SubMatches(locRegGroup.Nr - 1)
   End If
-  
+
 End Property
 
 Friend Property Get FirstIndex() As Long

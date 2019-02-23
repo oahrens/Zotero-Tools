@@ -9,16 +9,22 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtBibliography.
 ' It preserves properties of the bibliography inside a document and methods to edit it.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
+Private pvtProgress As ZtProgress
 Private pvtMainStory As ZtMainStory
 Private pvtRange As Word.Range
 Private pvtReferences() As ZtReference
@@ -39,14 +45,16 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Function Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valMainStory As ZtMainStory) As ZtFMessageType
+Friend Function Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valMainStory As ZtMainStory) As ZtFMessageType
 
   Dim locField As Word.Field
   Dim locResult As ZtFMessageType
 
   If pvtRange Is Nothing Then
     Set pvtConfig = valConfig
-    Set pvtStartForm = valStartForm
+    Set pvtMessageDisplay = valMessageDisplay
+    Set pvtProgress = valProgress
     Set pvtMainStory = valMainStory
     
     For Each locField In pvtMainStory.Document.Fields
@@ -57,10 +65,10 @@ Friend Function Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As Zt
       End If
     Next
     If locResult <> MessageOk Then
-      locResult = pvtStartForm.MessageDisplay.Show("I've not found any bibliography!" & vbNewLine & vbNewLine & _
-                                                     "Are you shure that this a Zotero document?", _
-                                                   MessageCritical + MessageCancel, _
-                                                   False)
+      locResult = pvtMessageDisplay.Show("I've not found any bibliography!" & vbNewLine & vbNewLine & _
+                                           "Are you shure that this a Zotero document?", _
+                                         MessageCritical + MessageCancel, _
+                                         False)
     End If
   Else
     locResult = MessageOk
@@ -77,10 +85,10 @@ Friend Function SetBookmarks() As ZtFMessageType
   
   locResult = pvtKeepReferences
   If locResult = MessageOk Then
-    pvtStartForm.Progress.SetStep pvtReferencesCt
+    pvtProgress.SetStep pvtReferencesCt
     For locReferenceCtr = 0 To pvtReferencesCt - 1
       pvtReferences(locReferenceCtr).SetBookmark
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
   End If
   
@@ -95,10 +103,10 @@ Friend Function SetInternalLinking() As ZtFMessageType
 
   locResult = pvtKeepReferences
   If locResult = MessageOk Then
-    pvtStartForm.Progress.SetStep pvtReferencesCt
+    pvtProgress.SetStep pvtReferencesCt
     For locReferenceCtr = 0 To pvtReferencesCt - 1
       locResult = pvtReferences(locReferenceCtr).SetInternalLinking
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
       If locResult = MessageCancel Then
         Exit For
       End If
@@ -118,10 +126,10 @@ Friend Function RemoveCitedOnPage() As ZtFMessageType
   
   locResult = pvtKeepReferences
   If locResult = MessageOk Then
-    pvtStartForm.Progress.SetStep pvtReferencesCt
+    pvtProgress.SetStep pvtReferencesCt
     For locReferenceCtr = 0 To pvtReferencesCt - 1
       pvtReferences(locReferenceCtr).RemoveCitedOnPage
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
   End If
   Erase pvtReferences
@@ -139,19 +147,19 @@ Friend Function SetWebLinks() As ZtFMessageType
   
   locResult = pvtKeepReferences
   If locResult = MessageOk Then
-    pvtStartForm.Progress.SetStep pvtReferencesCt
+    pvtProgress.SetStep pvtReferencesCt
     For locReferenceCtr = 0 To pvtReferencesCt - 1
       locResult = pvtReferences(locReferenceCtr).SetWebLink(locAffectedReferencesCt)
       If locResult = MessageCancel Then
         Exit For
       End If
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
     If locResult = MessageOk And locAffectedReferencesCt = 0 Then
-      locResult = pvtStartForm.MessageDisplay.Show("I couldn't find any web or doi addresses in the bibliography or all addresses already have been linked." & vbNewLine & vbNewLine & _
-                                                     "If you're shure that unlinked addresses do exist, please check the settings for reference style in ZtConfig.xml.", _
-                                                   MessageExclamation + Messageno, _
-                                                   False)
+      locResult = pvtMessageDisplay.Show("I couldn't find any web or doi addresses in the bibliography or all addresses already have been linked." & vbNewLine & vbNewLine & _
+                                           "If you're shure that unlinked addresses do exist, please check the settings for reference style in ZtConfig.xml.", _
+                                         MessageExclamation + MessageNo, _
+                                         False)
     End If
   End If
   
@@ -202,14 +210,16 @@ Private Function pvtKeepReferences() As ZtFMessageType
 
   If pvtReferencesCt = -1 Then
     pvtReferencesCt = 0
-    pvtStartForm.Progress.SetStep pvtRange.Paragraphs.Count
+    pvtProgress.SetStep pvtRange.Paragraphs.Count
     For Each locParagraph In pvtRange.Paragraphs
       ' The first paragraph in the paragraphs collection incomporates the whole bibliography plus next paragraph!?
       ' Otherwise the MoveEndUntil vbNewLine mechanism is very, very slow, when backreferences occure in a reference.
       If pvtReferencesCt = 0 Then
         Set locRange = pvtRange.Duplicate
-        locRange.Collapse wdCollapseStart
-        locRange.MoveEndUntil vbNewLine, wdForward
+        With locRange
+          .Collapse wdCollapseStart
+          .MoveEndUntil vbNewLine, wdForward
+        End With
       Else
         Set locRange = locParagraph.Range.Duplicate
         With locRange
@@ -220,23 +230,23 @@ Private Function pvtKeepReferences() As ZtFMessageType
       If locResult = MessageCancel Then
         Exit For
       ElseIf pvtReferences(pvtReferencesCt - 1).Nr <> pvtReferencesCt - 1 Then
-        locResult = pvtStartForm.MessageDisplay.Show("There are irregularities in the sequence of your reference numbering, have a look at the selected reference.", _
-                                                     MessageCritical + MessageCancel, _
-                                                     False, _
-                                                     locRange)
+        locResult = pvtMessageDisplay.Show("There are irregularities in the sequence of your reference numbering, have a look at the selected reference.", _
+                                           MessageCritical + MessageCancel, _
+                                           False, _
+                                           locRange)
         Exit For
       Else
         locResult = MessageOk
       End If
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
     
     If locResult <> MessageCancel And pvtReferencesCt = 0 Then
     
-      locResult = pvtStartForm.MessageDisplay.Show("No references found!" & vbNewLine & vbNewLine & _
-                                                     "Are you shure this is a Zotero document? Are you also shure you've set the correct reference style in ZtConfig.xml?", _
-                                                   MessageCritical + MessageCancel, _
-                                                   False)
+      locResult = pvtMessageDisplay.Show("No references found!" & vbNewLine & vbNewLine & _
+                                           "Are you shure this is a Zotero document? Are you also shure you've set the correct reference style in ZtConfig.xml?", _
+                                         MessageCritical + MessageCancel, _
+                                         False)
     End If
   Else
     locResult = MessageOk
@@ -252,7 +262,7 @@ Private Function pvtReferenceFactory(ByVal valRange As Word.Range) As ZtFMessage
   
   ReDim Preserve pvtReferences(pvtReferencesCt)
   Set pvtReferences(pvtReferencesCt) = New ZtReference
-  locResult = pvtReferences(pvtReferencesCt).Initialize(pvtConfig, pvtStartForm, Me, valRange)
+  locResult = pvtReferences(pvtReferencesCt).Initialize(pvtConfig, pvtMessageDisplay, Me, valRange)
   If locResult = MessageOk Then
     pvtReferencesCt = pvtReferencesCt + 1
   ElseIf pvtReferencesCt > 0 Then

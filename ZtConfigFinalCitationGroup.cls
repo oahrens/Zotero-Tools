@@ -9,18 +9,23 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtConfigFinalCitationGroup.
 ' It preserves a part of the final configuration informations and methods to read them from ZtConfig.xml.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
-Private pvtBetweenDeleteRegExp As ZtRegDebuggingWrapper
-Private pvtBetweenDeleteMultipleSpaceRegExp As ZtRegDebuggingWrapper
-Private pvtBetweenDeleteAffixedSpaceRegExp As ZtRegDebuggingWrapper
-Private pvtPunctuationRegExp() As ZtRegDebuggingWrapper
+Private pvtBetweenDeleteRegExp As ZtRegExp
+Private pvtBetweenDeleteMultipleSpaceRegExp As ZtRegExp
+Private pvtBetweenDeleteAffixedSpaceRegExp As ZtRegExp
+Private pvtPunctuationRegExp() As ZtRegExp
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -65,25 +70,25 @@ Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valXml As MSXML2.DOMDoc
 
 End Sub
 
-Friend Property Get BetweenDeleteRegExp() As ZtRegDebuggingWrapper
+Friend Property Get BetweenDeleteRegExp() As ZtRegExp
 
   Set BetweenDeleteRegExp = pvtBetweenDeleteRegExp
   
 End Property
 
-Friend Property Get BetweenDeleteMultipleSpaceRegExp() As ZtRegDebuggingWrapper
+Friend Property Get BetweenDeleteMultipleSpaceRegExp() As ZtRegExp
 
   Set BetweenDeleteMultipleSpaceRegExp = pvtBetweenDeleteMultipleSpaceRegExp
   
 End Property
 
-Friend Property Get BetweenDeleteAffixedSpaceRegExp() As ZtRegDebuggingWrapper
+Friend Property Get BetweenDeleteAffixedSpaceRegExp() As ZtRegExp
 
   Set BetweenDeleteAffixedSpaceRegExp = pvtBetweenDeleteAffixedSpaceRegExp
   
 End Property
 
-Friend Function PunctuationRegExp(ByVal valSurroundingSigns As ZtFSurroundingSigns) As ZtRegDebuggingWrapper
+Friend Function PunctuationRegExp(ByVal valSurroundingSigns As ZtFSurroundingSigns) As ZtRegExp
 
   Set PunctuationRegExp = pvtPunctuationRegExp(valSurroundingSigns)
   

@@ -9,10 +9,15 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtCheckBox.
 ' It capsules MSForms.CheckBox.
 ' It enables the check box to cache its enabled state before disabled and its value before disabled and unchecked simultaneously.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -66,31 +71,35 @@ End Property
 
 Friend Property Let EnabledCacheValue(ByVal valEnable As Boolean)
 
-  If valEnable <> pvtCheckBox.Enabled Then
-    pvtCheckBox.Enabled = valEnable
-    pvtEnabledCache = valEnable
-    pvtIsProtected = True
-    If valEnable Then
-      pvtCheckBox.Value = CallByName(pvtControl.Parent, pvtCallbackProperty, VbGet)
-    Else
-      CallByName pvtControl.Parent, pvtCallbackProperty, VbLet, pvtCheckBox.Value
-      pvtCheckBox.Value = False
+  With pvtCheckBox
+    If valEnable <> .Enabled Then
+      .Enabled = valEnable
+      pvtEnabledCache = valEnable
+      pvtIsProtected = True
+      If valEnable Then
+        .Value = CallByName(pvtControl.Parent, pvtCallbackProperty, VbGet)
+      Else
+        CallByName pvtControl.Parent, pvtCallbackProperty, VbLet, .Value
+        .Value = False
+      End If
+      pvtIsProtected = False
     End If
-    pvtIsProtected = False
-  End If
+  End With
   
 End Property
 
 Friend Property Let EnabledCacheEnabled(ByVal valEnable As Boolean)
 
-  If valEnable <> pvtCheckBox.Enabled Then
-    If valEnable Then
-      pvtCheckBox.Enabled = pvtEnabledCache
-    Else
-      pvtEnabledCache = pvtCheckBox.Enabled
-      pvtCheckBox.Enabled = valEnable
+  With pvtCheckBox
+    If valEnable <> .Enabled Then
+      If valEnable Then
+        .Enabled = pvtEnabledCache
+      Else
+        pvtEnabledCache = .Enabled
+        .Enabled = valEnable
+      End If
     End If
-  End If
+  End With
   
 End Property
 
@@ -120,8 +129,10 @@ Private Sub pvtCheckBox_Change()
     If pvtHasDependentCheckBoxes Then
       pvtIsProtected = True
       For locCtr = 0 To UBound(pvtDependentCheckBoxes)
-        pvtDependentCheckBoxes(locCtr).Value = False
-        pvtDependentCheckBoxes(locCtr).Enabled = Not pvtCheckBox.Value
+        With pvtDependentCheckBoxes(locCtr)
+          .Value = False
+          .Enabled = Not pvtCheckBox.Value
+        End With
       Next
       pvtIsProtected = False
     End If

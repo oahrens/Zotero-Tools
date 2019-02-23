@@ -8,10 +8,16 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+Implements ZtIMessageDisplayable
+
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtMessageDisplay.
 ' Shows messages and manages user reactions to these.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -26,21 +32,33 @@ Private Const PVT_SOUND_INFORMATION As String = ".Default"
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
-Private pvtPreparable As ZtIPreparable
 Private pvtTextBox As MSForms.TextBox
 Private WithEvents pvtProcedeButton As MSForms.CommandButton
 Private WithEvents pvtCancelButton As MSForms.CommandButton
 Private WithEvents pvtDisableButton As MSForms.CommandButton
 Private pvtResult As ZtFMessageType
+Private pvtAppPrepare As ZtIAppPreparable
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+' Private interface procedures and properties directing to Friend procedures and properties below.
+Private Function ZtIMessageDisplayable_Show(ByVal valMessage As String, ByVal valType As ZtFMessageType, Optional ByVal valRePrepare As Boolean = True, _
+  Optional ByVal valSelectionRange As Word.Range = Nothing) As ZtFMessageType
+
+  ZtIMessageDisplayable_Show = Me.Show(valMessage, valType, valRePrepare, valSelectionRange)
+  
+End Function
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Sub Initialize(ByVal valPreparable As ZtIPreparable, ByVal valTextBox As MSForms.TextBox, ByVal valProcedeButton As MSForms.CommandButton, _
-  ByVal valCancelButton As MSForms.CommandButton, ByVal valDiableButton As MSForms.CommandButton)
+Friend Sub Initialize(ByVal valTextBox As MSForms.TextBox, ByVal valProcedeButton As MSForms.CommandButton, _
+  Optional ByVal valCancelButton As MSForms.CommandButton = Nothing, Optional ByVal valDiableButton As MSForms.CommandButton = Nothing, _
+  Optional ByVal valAppPrepare As ZtIAppPreparable = Nothing)
 
-  Set pvtPreparable = valPreparable
+  Set pvtAppPrepare = valAppPrepare
   Set pvtTextBox = valTextBox
   Set pvtProcedeButton = valProcedeButton
   Set pvtCancelButton = valCancelButton
@@ -53,7 +71,7 @@ Friend Function Show(ByVal valMessage As String, ByVal valType As ZtFMessageType
   
   Dim locStart As Date
   
-  pvtPreparable.Unprepare
+  pvtAppPrepare.Unprepare
   If Not valSelectionRange Is Nothing Then
     valSelectionRange.Select
     DoEvents
@@ -80,9 +98,15 @@ Friend Function Show(ByVal valMessage As String, ByVal valType As ZtFMessageType
   End With
   
   ' Enable buttons.
-  pvtProcedeButton.Enabled = ((valType And MessageOk) = MessageOk)
-  pvtCancelButton.Enabled = ((valType And MessageCancel) = MessageCancel) Or ((valType And Messageno) = Messageno)
-  pvtDisableButton.Enabled = ((valType And MessageDisable) = MessageDisable)
+  If Not pvtProcedeButton Is Nothing Then
+    pvtProcedeButton.Enabled = ((valType And MessageOk) = MessageOk) Or ((valType And MessageNo) = MessageNo)
+  End If
+  If Not pvtCancelButton Is Nothing Then
+    pvtCancelButton.Enabled = ((valType And MessageCancel) = MessageCancel)
+  End If
+  If Not pvtDisableButton Is Nothing Then
+    pvtDisableButton.Enabled = ((valType And MessageDisable) = MessageDisable)
+  End If
   
   ' Wait for user reaction.
   pvtResult = MessageNone
@@ -95,7 +119,7 @@ Friend Function Show(ByVal valMessage As String, ByVal valType As ZtFMessageType
   
   ' Resume after user reaction.
   If valRePrepare And pvtResult <> MessageCancel Then
-    pvtPreparable.Prepare
+    pvtAppPrepare.Prepare
   End If
   pvtTextBox.Text = vbNullString
   
@@ -141,9 +165,15 @@ End Sub
 ' Private procedures.
 Private Sub pvtEnableProcedureControls(ByVal valEnable As Boolean)
   
-  pvtProcedeButton.Enabled = valEnable
-  pvtCancelButton.Enabled = valEnable
-  pvtDisableButton.Enabled = valEnable
+  If Not pvtProcedeButton Is Nothing Then
+    pvtProcedeButton.Enabled = valEnable
+  End If
+  If Not pvtCancelButton Is Nothing Then
+    pvtCancelButton.Enabled = valEnable
+  End If
+  If Not pvtDisableButton Is Nothing Then
+    pvtDisableButton.Enabled = valEnable
+  End If
   DoEvents
   
 End Sub

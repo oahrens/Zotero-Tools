@@ -9,9 +9,14 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtProgress.
-' Manages progress bars in ZtStartForm.
+' It manages progress bars in ZtStartForm.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -65,12 +70,18 @@ Friend Sub Reset()
   pvtSub1CurrentWidth = 0
   pvtCurrentWidth = 0
   pvtSub0Left = 0
-  pvtSub0Control.Left = pvtSub0Left
-  pvtSub0Control.Width = pvtSub0CurrentWidth
-  pvtSub1Control.Left = 0
-  pvtSub1Control.Width = pvtSub1CurrentWidth
-  pvtControl.Left = 0
-  pvtControl.Width = pvtCurrentWidth
+  With pvtSub0Control
+    .Left = pvtSub0Left
+    .Width = pvtSub0CurrentWidth
+  End With
+  With pvtSub1Control
+    .Left = 0
+    .Width = pvtSub1CurrentWidth
+  End With
+  With pvtControl
+    .Left = 0
+    .Width = pvtCurrentWidth
+  End With
   pvtIsInRunningMode = False
   DoEvents
 

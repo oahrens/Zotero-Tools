@@ -9,16 +9,22 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtDocument.
 ' It preserves properties of the document and methods to edit it.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
+Private pvtProgress As ZtProgress
 Private pvtDocument As Word.Document
 Private pvtStories() As ZtIStory
 Private pvtStoriesCt As Integer
@@ -48,10 +54,11 @@ End Sub
 ' Friend procedures and variables.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Intenal functionality.
-Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As Word.Document)
+Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valDocument As Word.Document, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress)
   
   Set pvtConfig = valConfig
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
+  Set pvtProgress = valProgress
   Set pvtDocument = valDocument
   
   ' Fix the skipped blank header/footer problem.
@@ -64,20 +71,25 @@ Friend Sub SaveBackupCopy()
 
   Dim locFileNameCache As String
 
-  locFileNameCache = pvtDocument.FullName
-  pvtDocument.SaveAs ZtSubprocedures.GetPath(pvtDocument.FullName) & _
-                     Application.PathSeparator & _
-                     ZtSubprocedures.GetFileNameWithoutExtension(pvtDocument.Name) & "_ZtBackup_" & Format(Now, "YYYYMMDD_HHmmss") & ZtSubprocedures.GetExtension(pvtDocument.Name)
-  DoEvents
-  pvtDocument.SaveAs locFileNameCache
-  DoEvents
+  With pvtDocument
+    locFileNameCache = .FullName
+    .SaveAs ZtSubprocedures.GetPath(pvtDocument.FullName) & _
+            Application.PathSeparator & _
+            ZtSubprocedures.GetFileNameWithoutExtension(pvtDocument.Name) & "_ZtBackup_" & Format$(Now, "YYYYMMDD_HHmmss") & ZtSubprocedures.GetExtension(pvtDocument.Name)
+    pvtProgress.SetCompleteStep
+    .SaveAs locFileNameCache
+    pvtProgress.SetCompleteStep
+  End With
   
 End Sub
 
 Friend Sub Prepare()
   
+  Dim locView As Word.View
+  
   If Not pvtIsPrepared Then
-    With pvtDocument.ActiveWindow.View
+    Set locView = pvtDocument.ActiveWindow.View
+    With locView
       pvtShowFieldCode = .ShowFieldCodes
       .ShowFieldCodes = False
       pvtShowAll = .ShowAll
@@ -92,8 +104,11 @@ End Sub
 
 Friend Sub Unprepare()
   
+  Dim locView As Word.View
+  
   If pvtIsPrepared Then
-    With pvtDocument.ActiveWindow.View
+    Set locView = pvtDocument.ActiveWindow.View
+    With locView
       .ShowFieldCodes = pvtShowFieldCode
       .ShowAll = pvtShowAll
       .ShowHiddenText = pvtShowHiddenText
@@ -109,7 +124,7 @@ Friend Function GetAdjustPunctuationStepsCt() As Integer
   Dim locStoryCtr As Integer
   Dim locStory As ZtIStory
   
-  locResult = 2 ' For pvtKeepStories and pvtKeepCitationGroups.
+  locResult = 4 ' For pvtKeepStories, pvtKeepCitationGroups, and 2 x save the document.
   pvtKeepStories
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
@@ -128,7 +143,7 @@ Friend Function GetJoinCitationGroupsAllStepsCt() As Integer
   Dim locStoryCtr As Integer
   Dim locStory As ZtIStory
   
-  locResult = 2 ' For pvtKeepStories and pvtKeepCitationGroups.
+  locResult = 4 ' For pvtKeepStories, pvtKeepCitationGroups, and 2 x save the document.
   pvtKeepStories
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
@@ -145,7 +160,7 @@ Friend Function GetJoinCitationGroupsSelectionStepsCt() As Integer
   
   Dim locResult As Integer
   
-  locResult = 3 ' For pvtKeepCitationGroups, keep citation groups of one story, and one story.
+  locResult = 5 ' For pvtKeepCitationGroups, keep citation groups of one story, one story, and 2 x save the document.
   
   GetJoinCitationGroupsSelectionStepsCt = locResult
   
@@ -157,7 +172,7 @@ Friend Function GetRemoveInternalLinkingStepsCt() As Integer
   Dim locStoryCtr As Integer
   Dim locStory As ZtIStory
   
-  locResult = 1 ' For pvtKeepStories.
+  locResult = 3 ' For pvtKeepStories and 2 x save the document.
   pvtKeepStories
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
@@ -177,7 +192,7 @@ Friend Function GetSetInternalLinkingStepsCt() As Integer
   Dim locStoryCtr As Integer
   Dim locStory As ZtIStory
   
-  locResult = 5 ' For pvtKeepStories, pvtKeepCitationGroups, SetBibliographyBookmarks, pvtKeepReferences, SetBookmarks.
+  locResult = 7 ' For pvtKeepStories, pvtKeepCitationGroups, SetBibliographyBookmarks, pvtKeepReferences, SetBookmarks, and 2 x save the document.
   If pvtConfig.User.Macro.WithBackwardLinking Then
     locResult = locResult + 2 ' For KeepCaptions and SetBibliographyLinking.
   End If
@@ -200,7 +215,7 @@ Friend Function GetResolveUnreachableCitationsStepsCt() As Integer
   Dim locStoryCtr As Integer
   Dim locStory As ZtIStory
   
-  locResult = 2 ' For pvtKeepReferences, pvtKeepCitationGroups.
+  locResult = 4 ' For pvtKeepReferences, pvtKeepCitationGroups, and 2 x save the document.
   pvtKeepStories
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
@@ -217,7 +232,7 @@ Friend Function GetSetWebLinksStepsCt() As Integer
   
   Dim locResult As Integer
   
-  locResult = 3 ' For pvtKeepCitationGroups, pvtKeepReferences, and SetWebLinks.
+  locResult = 5 ' For pvtKeepCitationGroups, pvtKeepReferences, SetWebLinks, and 2 x save the document.
   
   GetSetWebLinksStepsCt = locResult
   
@@ -232,22 +247,22 @@ Friend Function AdjustPunctuation() As ZtFMessageType
   Dim locNotAffectedCt As Integer
   Dim locNotCorrectedCt As Integer
   
-  Err.Raise 1234, " Test"
-  
   pvtKeepStories
   locResult = pvtKeepCitationGroups
   If locResult = MessageOk Then
     For locStoryCtr = 0 To pvtStoriesCt - 1
       Set locStory = pvtStories(locStoryCtr)
-      If locStory.CanHoldCitations Then
-        locResult = locStory.AdjustPunctuation(locAffectedCt, locNotAffectedCt, locNotCorrectedCt)
-        If locResult = MessageCancel Then
-          Exit For
+      With locStory
+        If .CanHoldCitations Then
+          locResult = .AdjustPunctuation(locAffectedCt, locNotAffectedCt, locNotCorrectedCt)
+          If locResult = MessageCancel Then
+            Exit For
+          End If
         End If
-      End If
+      End With
     Next
     If locResult = MessageOk Then
-      pvtStartForm.Progress.SetCompleted
+      pvtProgress.SetCompleted
       locResult = pvtCheckAffectedCitationGroupsCt(locAffectedCt, locNotAffectedCt, locNotCorrectedCt, "punctation adjustment of")
     End If
   End If
@@ -263,7 +278,7 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
   Dim locResult As ZtFMessageType
   
   pvtKeepStories
-  ' delete hyperlinks to references and citations, bookmarks of references and citations, and hidden spaces
+  ' Delete hyperlinks to references and citations, bookmarks of references and citations, and hidden spaces.
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
     If locStory.CanHoldCitations Then
@@ -273,7 +288,7 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
       End If
     End If
   Next
-  pvtStartForm.Progress.SetCompleted
+  pvtProgress.SetCompleted
   
   RemoveInternalLinking = locResult
 
@@ -288,7 +303,7 @@ Friend Function SetInternalLinking() As ZtFMessageType
   pvtKeepStories
   locResult = pvtKeepCitationGroups
   If locResult = MessageOk Then
-    ' set bookmarks on references
+    ' Set bookmarks on references.
     locResult = MainStory.SetBibliographyBookmarks
     If locResult = MessageOk Then
     
@@ -297,7 +312,7 @@ Friend Function SetInternalLinking() As ZtFMessageType
         MainStory.KeepCaptions
       End If
         
-      ' link citations to references
+      ' Link citations to references.
       For locStoryCtr = 0 To pvtStoriesCt - 1
         Set locStory = pvtStories(locStoryCtr)
         If locStory.CanHoldCitations Then
@@ -308,7 +323,7 @@ Friend Function SetInternalLinking() As ZtFMessageType
         End If
       Next
       
-      ' if necessary link reference to citation (backward linking)
+      ' If necessary link reference to citation (backward linking).
       If locResult = MessageOk And pvtConfig.User.Macro.WithBackwardLinking Then
         locResult = MainStory.SetBibliographyLinking
       End If
@@ -331,15 +346,15 @@ Friend Function JoinCitationGroupsAll() As ZtFMessageType
   pvtKeepStories
   locResult = pvtKeepCitationGroups
   If locResult = MessageOk Then
-    pvtStartForm.Progress.SetToRunningMode
+    pvtProgress.SetToRunningMode
     For locStoryCtr = 0 To pvtStoriesCt - 1
       Set locStory = pvtStories(locStoryCtr)
       If locStory.CanHoldCitations Then
         locStory.JoinCitationGroups locAffectedCt, locNotAffectedCt
-        pvtStartForm.Progress.SetSubstep
+        pvtProgress.SetSubstep
       End If
     Next
-    pvtStartForm.Progress.SetCompleted
+    pvtProgress.SetCompleted
     pvtCitationGroupsCt = -1
     locResult = pvtCheckAffectedCitationGroupsCt(locAffectedCt, locNotAffectedCt, 0, "joining of")
   End If
@@ -360,15 +375,17 @@ Friend Function JoinCitationGroupsSelection() As ZtFMessageType
   pvtKeepStories
   For locStoryCtr = 0 To pvtStoriesCt - 1
     Set locStory = pvtStories(locStoryCtr)
-    If locRange.InRange(locStory.Range) Then
-      locStory.KeepCitationGroups pvtCitationGroupsCt
-      pvtStartForm.Progress.SetStep
-      pvtStartForm.Progress.SetToRunningMode
-      locStory.JoinCitationGroups locAffectedCt, 0, locRange
-      Exit For
-    End If
+    With locStory
+      If locRange.InRange(.Range) Then
+        .KeepCitationGroups pvtCitationGroupsCt
+        pvtProgress.SetStep
+        pvtProgress.SetToRunningMode
+        .JoinCitationGroups locAffectedCt, 0, locRange
+        Exit For
+      End If
+    End With
   Next
-  pvtStartForm.Progress.SetCompleted
+  pvtProgress.SetCompleted
   pvtCitationGroupsCt = -1
   locResult = pvtCheckAffectedCitationGroupsCt(locAffectedCt, 0, 0, "joining of")
   
@@ -399,9 +416,11 @@ Friend Function ResolveUnreachableCitationGroups() As ZtFMessageType
   If locResult = MessageOk Then
     For locStoryCtr = 0 To pvtStoriesCt - 1
       Set locStory = pvtStories(locStoryCtr)
-      If Not locStory.CanHoldCitations Then
-        locStory.ResolveCitationGroups locAffectedCt
-      End If
+      With locStory
+        If Not .CanHoldCitations Then
+          .ResolveCitationGroups locAffectedCt
+        End If
+      End With
     Next
     locResult = pvtCheckAffectedCitationGroupsCt(locAffectedCt, 0, 0, "resolving unreachable")
   End If
@@ -524,18 +543,17 @@ End Property
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private procedures and variables.
 
-' thanks to https://superuser.com/questions/196703/how-do-i-update-all-fields-in-a-word-document
+' Thanks to https://superuser.com/questions/196703/how-do-i-update-all-fields-in-a-word-document.
 Private Sub pvtUpdateAllFields()
 
   Dim locStoryCtr As Integer
   
-  '' Update fields everywhere. This includes updates of page numbers in
-  '' tables (but would not add or remove entries). This also takes care of
-  '' all index updates.
-  pvtStartForm.Progress.SetStep pvtStoriesCt
+  ' Update fields everywhere. This includes updates of page numbers in tables (but would not add or remove entries).
+  ' This also takes care of all index updates.
+  pvtProgress.SetStep pvtStoriesCt
   For locStoryCtr = 0 To pvtStoriesCt - 1
     pvtStories(locStoryCtr).UpdateAllFields
-    pvtStartForm.Progress.SetSubstep
+    pvtProgress.SetSubstep
   Next
     
 End Sub
@@ -547,35 +565,39 @@ Private Sub pvtKeepStories()
 
   If pvtStoriesCt = -1 Then
     pvtStoriesCt = 0
-    pvtStartForm.Progress.SetStep pvtDocument.StoryRanges.Count
+    pvtProgress.SetStep pvtDocument.StoryRanges.Count
     For Each locStoryRange In pvtDocument.StoryRanges
-      If Not ZtSubprocedures.ArrayContains(locStoryRange.StoryType, pvtConfig.Basic.Word.CantHoldFieldStoryTypes) Then
-        ' Word can't insert fields into 'normal' text frames (called 'textboxes', also we are in a text frame story), so we can skip this story.
-        ' Word can insert fields into frames stored in form fields. But these are part of and queued in the Word main story.
-        ' Further informations about frames and textboxes: http://www.addbalance.com/word/frames_textboxes.htm.
-        Do
-          pvtStoryFactory locStoryRange
-          
-          ' From: https://wordmvp.com/FAQs/Customization/ReplaceAnywhere.htm.
-          If ZtSubprocedures.ArrayContains(locStoryRange.StoryType, pvtConfig.Basic.Word.MultipleStoriesStoryTypes) Then
-            If locStoryRange.ShapeRange.Count > 0 Then
-              For Each locShapeRange In locStoryRange.ShapeRange
-                If locShapeRange.TextFrame.HasText Then
-                  pvtStoryFactory locShapeRange.TextFrame.TextRange
-                End If
-              Next
+      With locStoryRange
+        If Not ZtSubprocedures.ArrayContains(.StoryType, pvtConfig.Basic.Word.CantHoldFieldStoryTypes) Then
+          ' Word can't insert fields into 'normal' text frames (called 'textboxes', also we are in a text frame story), so we can skip this story.
+          ' Word can insert fields into frames stored in form fields. But these are part of and queued in the Word main story.
+          ' Further informations about frames and textboxes: http://www.addbalance.com/word/frames_textboxes.htm.
+          Do
+            pvtStoryFactory locStoryRange
+            
+            ' From: https://wordmvp.com/FAQs/Customization/ReplaceAnywhere.htm.
+            If ZtSubprocedures.ArrayContains(.StoryType, pvtConfig.Basic.Word.MultipleStoriesStoryTypes) Then
+              If .ShapeRange.Count > 0 Then
+                For Each locShapeRange In .ShapeRange
+                  With locShapeRange
+                    If .TextFrame.HasText Then
+                      pvtStoryFactory .TextFrame.TextRange
+                    End If
+                  End With
+                Next
+              End If
+              
             End If
             
-          End If
-          
-          Set locStoryRange = locStoryRange.NextStoryRange
-          
-        Loop Until locStoryRange Is Nothing
-      End If
-      pvtStartForm.Progress.SetSubstep
+            Set locStoryRange = locStoryRange.NextStoryRange
+            
+          Loop Until locStoryRange Is Nothing
+        End If
+      End With
+      pvtProgress.SetSubstep
     Next
   Else
-    pvtStartForm.Progress.SetCompleteStep
+    pvtProgress.SetCompleteStep
   End If
   
 End Sub
@@ -587,17 +609,17 @@ Private Function pvtKeepCitationGroups() As ZtFMessageType
   
   If pvtCitationGroupsCt = -1 Then
     pvtCitationGroupsCt = 0
-    pvtStartForm.Progress.SetStep pvtStoriesCt
+    pvtProgress.SetStep pvtStoriesCt
     For locStoryCtr = 0 To pvtStoriesCt - 1
       pvtStories(locStoryCtr).KeepCitationGroups pvtCitationGroupsCt
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
     
     If pvtCitationGroupsCt = 0 Then
-      locResult = pvtStartForm.MessageDisplay.Show("No citation groups found!" & vbNewLine & vbNewLine & _
-                                                     "Are you shure this is a Zotero document?", _
-                                                   MessageCritical + MessageCancel, _
-                                                   False)
+      locResult = pvtMessageDisplay.Show("No citation groups found!" & vbNewLine & vbNewLine & _
+                                           "Are you shure this is a Zotero document?", _
+                                         MessageCritical + MessageCancel, _
+                                         False)
     Else
       locResult = MessageOk
     End If
@@ -617,7 +639,7 @@ Private Sub pvtStoryFactory(ByVal valStoryRange As Word.Range)
   Else
     Set pvtStories(pvtStoriesCt) = New ZtStory
   End If
-  pvtStories(pvtStoriesCt).Initialize pvtConfig, pvtStartForm, Me, valStoryRange
+  pvtStories(pvtStoriesCt).Initialize pvtConfig, pvtMessageDisplay, pvtProgress, Me, valStoryRange
   pvtStoriesCt = pvtStoriesCt + 1
 
 End Sub
@@ -627,17 +649,18 @@ Private Function pvtCheckAffectedCitationGroupsCt(ByVal valAffectedCt As Integer
 
   Dim locResult As ZtFMessageType
   
-  locResult = pvtStartForm.MessageDisplay.Show("Result for " & valDescription & " citation groups:" & vbNewLine & _
-                                                 vbTab & "affected: " & CStr(valAffectedCt) & vbNewLine & _
-                                                 vbTab & "not affected: " & CStr(valNotAffectedCt) & vbNewLine & _
-                                                 vbTab & "not corrected: " & CStr(valNotCorrectedCt), _
-                                               IIf(valNotCorrectedCt > 0, MessageCancel, MessageOk) + IIf(valNotCorrectedCt > 0, MessageExclamation, MessageInformation), _
-                                               False)
+  locResult = pvtMessageDisplay.Show("Result for " & valDescription & " citation groups:" & vbNewLine & _
+                                       vbTab & "affected: " & CStr(valAffectedCt) & vbNewLine & _
+                                       vbTab & "not affected: " & CStr(valNotAffectedCt) & vbNewLine & _
+                                       vbTab & "not corrected: " & CStr(valNotCorrectedCt), _
+                                     IIf(valNotCorrectedCt > 0, MessageCancel, MessageOk) + IIf(valNotCorrectedCt > 0, MessageExclamation, MessageInformation), _
+                                     False)
   
   pvtCheckAffectedCitationGroupsCt = locResult
 
 End Function
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 
 
 

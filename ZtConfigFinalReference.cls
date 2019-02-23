@@ -9,9 +9,14 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtConfigFinalReference.
 ' It preserves a part of the final configuration informations and methods to read them from ZtConfig.xml.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -19,8 +24,8 @@ Option Explicit
 ' Private variables.
 Private pvtReferenceUniversalSuffixCharacters As String
 Private pvtReferenceUniversalSuffixChoiceRegString As String
-Private pvtWholeRegExp As ZtRegDebuggingWrapper
-Private pvtWebLinkRegExp As ZtRegDebuggingWrapper
+Private pvtWholeRegExp As ZtRegExp
+Private pvtWebLinkRegExp As ZtRegExp
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -97,13 +102,13 @@ Public Property Get ReferenceUniversalSuffixChoiceRegString() As String
   
 End Property
 
-Friend Property Get WholeRegExp() As ZtRegDebuggingWrapper
+Friend Property Get WholeRegExp() As ZtRegExp
 
   Set WholeRegExp = pvtWholeRegExp
   
 End Property
 
-Friend Property Get WebLinkRegExp() As ZtRegDebuggingWrapper
+Friend Property Get WebLinkRegExp() As ZtRegExp
 
   Set WebLinkRegExp = pvtWebLinkRegExp
   

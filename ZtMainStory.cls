@@ -10,16 +10,22 @@ Attribute VB_Exposed = False
 Option Explicit
 Implements ZtIStory
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtMainStory.
 ' It extends ZtStory for captions and bibliography.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
+Private pvtProgress As ZtProgress
 Private pvtDocument As ZtDocument
 Private pvtRange As Word.Range
 Private pvtStory As ZtStory
@@ -43,9 +49,10 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private interface procedures and properties directing to Friend procedures and properties below.
-Private Sub ZtIStory_Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
+Private Sub ZtIStory_Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
   
-  Me.Initialize valConfig, valStartForm, valDocument, valRange
+  Me.Initialize valConfig, valMessageDisplay, valProgress, valDocument, valRange
   
 End Sub
 
@@ -113,13 +120,15 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
+Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
   
   Set pvtConfig = valConfig
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
+  Set pvtProgress = valProgress
   Set pvtDocument = valDocument
   Set pvtRange = valRange
-  pvtStory.Initialize valConfig, valStartForm, valDocument, valRange
+  pvtStory.Initialize pvtConfig, pvtMessageDisplay, pvtProgress, pvtDocument, pvtRange
   
 End Sub
 
@@ -141,9 +150,9 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
   
   locResult = pvtStory.RemoveInternalLinking()
   If locResult = MessageOk Then
-    locResult = pvtBibliography.Initialize(pvtConfig, pvtStartForm, Me)
+    locResult = pvtBibliography.Initialize(pvtConfig, pvtMessageDisplay, pvtProgress, Me)
     If locResult = MessageOk Then
-      ' delete 'Cited on page n' text
+      ' Delete 'Cited on page n' text.
       locResult = pvtBibliography.RemoveCitedOnPage
     End If
   End If
@@ -175,8 +184,7 @@ Friend Sub UpdateAllFields()
   Dim locToc As Word.TableOfContents
   Dim locTof As Word.TableOfFigures
   
-  '' Update tables. We do this first so that they contain all necessary
-  '' entries and so extend to their final number of pages.
+  ' Update tables. We do this first so that they contain all necessary entries and so extend to their final number of pages.
   For Each locToc In pvtDocument.TablesOfContents
     locToc.Update
   Next
@@ -221,9 +229,9 @@ Friend Function SetBibliographyBookmarks() As ZtFMessageType
 
   Dim locResult As ZtFMessageType
   
-  pvtStartForm.Progress.SetStep 1
-  locResult = pvtBibliography.Initialize(pvtConfig, pvtStartForm, Me)
-  pvtStartForm.Progress.SetSubstep
+  pvtProgress.SetStep 1
+  locResult = pvtBibliography.Initialize(pvtConfig, pvtMessageDisplay, pvtProgress, Me)
+  pvtProgress.SetSubstep
   If locResult = MessageOk Then
     locResult = pvtBibliography.SetBookmarks
   End If
@@ -242,7 +250,7 @@ Friend Function SetBibliographyWebLinks() As ZtFMessageType
 
   Dim locResult As ZtFMessageType
   
-  locResult = pvtBibliography.Initialize(pvtConfig, pvtStartForm, Me)
+  locResult = pvtBibliography.Initialize(pvtConfig, pvtMessageDisplay, pvtProgress, Me)
   If locResult = MessageOk Then
     locResult = pvtBibliography.SetWebLinks
   End If
@@ -263,8 +271,8 @@ Friend Sub KeepCaptions()
   Dim locPreviousCaptionStart As Long
   
   If pvtCaptionsCt = -1 Then
-    pvtStartForm.Progress.SetToRunningMode
-    pvtStartForm.Progress.SetStep
+    pvtProgress.SetToRunningMode
+    pvtProgress.SetStep
     pvtCaptionsCt = 0
     ' Null-caption for all citations before first caption (in the introduction etc).
     pvtCaptionFactory "?", "?", 0
@@ -279,15 +287,15 @@ Friend Sub KeepCaptions()
           End If
         End If
         locPreviousCaptionStart = .Start
-        pvtStartForm.Progress.SetSubstep
+        pvtProgress.SetSubstep
         Set locCaptionRange = .GoToNext(wdGoToHeading)
       End With
     Loop
-    pvtStartForm.Progress.SetToNormalMode
+    pvtProgress.SetToNormalMode
     If pvtCaptionsCt = 1 Then
-      pvtStartForm.MessageDisplay.Show "I couldn't find any caption." & vbNewLine & vbNewLine & _
-                                         "Please, ensure that you have used Word's build-in formatting for heading levels 1 to 9 in your document.", _
-                                       MessageExclamation + MessageCancel
+      pvtMessageDisplay.Show "I couldn't find any caption." & vbNewLine & vbNewLine & _
+                               "Please, ensure that you have used Word's build-in formatting for heading levels 1 to 9 in your document.", _
+                             MessageExclamation + MessageCancel
     End If
   End If
   

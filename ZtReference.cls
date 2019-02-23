@@ -9,16 +9,21 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtReference.
 ' It preserves information of a reference entry in the bibliography, i.e. text, Word bookmark, and corresponding citations.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
 Private pvtBibliography As ZtBibliography
 Private pvtRange As Word.Range
 Private pvtMatch As ZtRegMatch
@@ -30,25 +35,29 @@ Private pvtCitationGroupsCt As Integer
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Function Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valBibliography As ZtBibliography, _
+Friend Function Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valBibliography As ZtBibliography, _
   ByVal valRange As Word.Range) As ZtFMessageType
   
   Dim locResult As ZtFMessageType
   
   Set pvtConfig = valConfig
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
   Set pvtBibliography = valBibliography
   Set pvtRange = valRange.Duplicate
   Set pvtMatch = pvtConfig.Final.Reference.WholeRegExp.FirstMatch(pvtRange.Text)
   If Not pvtMatch Is Nothing Then
-    locResult = pvtConfig.Final.Reference.WholeRegExp.Debugging(pvtMatch, pvtRange)
+    If pvtConfig.User.Macro.Debugging Then
+      locResult = pvtConfig.Final.Reference.WholeRegExp.Debugging(pvtMatch, pvtRange)
+    Else
+      locResult = MessageOk
+    End If
   ElseIf Len(Trim$(pvtRange.Text)) > 0 Then
-    locResult = pvtStartForm.MessageDisplay.Show("The reference style you set in ZtConfig.xml seems not to apply to the selected reference.", _
-                                                 MessageCritical + MessageCancel, _
-                                                 False, _
-                                                 pvtRange)
+    locResult = pvtMessageDisplay.Show("The reference style you set in ZtConfig.xml seems not to apply to the selected reference.", _
+                                       MessageCritical + MessageCancel, _
+                                       False, _
+                                       pvtRange)
   Else
-    locResult = Messageno
+    locResult = MessageNo
   End If
   
   Initialize = locResult
@@ -72,45 +81,45 @@ Friend Sub RemoveCitedOnPage()
   Dim locToCorrect As Boolean
   Dim locRange As Word.Range
         
-  ' Determine whether reference text has to be changed.
-  If Len(pvtMatch.Groups("backwardLinking")) > 0 Then
-  
-    locToCorrect = True
+  With pvtMatch
+    ' Determine whether reference text has to be changed.
+    If Len(.Groups("backwardLinking")) > 0 Then
     
-  ElseIf Len(pvtMatch.Groups("accessedAtEnd")) > 0 And _
-    pvtMatch.Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceAccessedAtEndSuffix Then
-    
-    locToCorrect = True
-  
-  ElseIf Len(pvtMatch.Groups("hyperlinkAtEnd")) > 0 And _
-    pvtMatch.Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceHyperlinkAtEndSuffix Then
-    
-    locToCorrect = True
-  
-  ElseIf pvtMatch.Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceNormalSuffix Then
-  
       locToCorrect = True
+      
+    ElseIf Len(.Groups("accessedAtEnd")) > 0 And _
+      .Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceAccessedAtEndSuffix Then
+      
+      locToCorrect = True
+    
+    ElseIf Len(.Groups("hyperlinkAtEnd")) > 0 And _
+      .Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceHyperlinkAtEndSuffix Then
+      
+      locToCorrect = True
+    
+    ElseIf .Groups("delimiterBeforeBackwardLinking") <> pvtConfig.User.ReferenceStyle.ReferenceNormalSuffix Then
+    
+        locToCorrect = True
+    
+    End If
   
-  End If
-  
-  ' If necessary change reference text.
-  If locToCorrect Then
-    Set locRange = pvtRange.Duplicate
-    With locRange
-      .MoveStart wdCharacter, _
-                 Len(pvtMatch.Groups("numbering")) + _
-                   Len(pvtMatch.Groups("text")) + _
-                   Len(pvtMatch.Groups("hyperlinkAtEnd")) + _
-                   Len(pvtMatch.Groups("accessedAtEnd"))
-      If Len(pvtMatch.Groups("accessedAtEnd")) > 0 Then
-        .Text = pvtConfig.User.ReferenceStyle.ReferenceAccessedAtEndSuffix
-      ElseIf Len(pvtMatch.Groups("hyperlinkAtEnd")) > 0 Then
-        .Text = pvtConfig.User.ReferenceStyle.ReferenceHyperlinkAtEndSuffix
+    ' If necessary change reference text.
+    If locToCorrect Then
+      Set locRange = pvtRange.Duplicate
+      locRange.MoveStart wdCharacter, _
+                         Len(.Groups("numbering")) + _
+                           Len(.Groups("text")) + _
+                           Len(.Groups("hyperlinkAtEnd")) + _
+                           Len(.Groups("accessedAtEnd"))
+      If Len(.Groups("accessedAtEnd")) > 0 Then
+        locRange.Text = pvtConfig.User.ReferenceStyle.ReferenceAccessedAtEndSuffix
+      ElseIf Len(.Groups("hyperlinkAtEnd")) > 0 Then
+        locRange.Text = pvtConfig.User.ReferenceStyle.ReferenceHyperlinkAtEndSuffix
       Else
-        .Text = pvtConfig.User.ReferenceStyle.ReferenceNormalSuffix
+        locRange.Text = pvtConfig.User.ReferenceStyle.ReferenceNormalSuffix
       End If
-    End With
-  End If
+    End If
+  End With
 
 End Sub
 
@@ -139,24 +148,30 @@ Friend Function SetWebLink(ByRef refAffectedReferencesCt As Integer) As ZtFMessa
   
   Set locMatch = pvtConfig.Final.Reference.WebLinkRegExp.FirstMatch(pvtRange.Text)
   If Not locMatch Is Nothing Then
-    locResult = pvtConfig.Final.Reference.WebLinkRegExp.Debugging(locMatch, pvtRange)
+    If pvtConfig.User.Macro.Debugging Then
+      locResult = pvtConfig.Final.Reference.WebLinkRegExp.Debugging(locMatch, pvtRange)
+    Else
+      locResult = MessageOk
+    End If
     If locResult = MessageOk Then
       Set locWebLinkRange = pvtRange.Duplicate
-      locWebLinkRange.SetRange locWebLinkRange.Start + locMatch.FirstIndex, _
-                               locWebLinkRange.Start + locMatch.FirstIndex + Len(locMatch.Groups("link"))
-      If locWebLinkRange.Hyperlinks.Count = 0 Then
-        If Len(locMatch.Groups("httpLink")) > 0 Then
-          pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
-                                                        locWebLinkRange.Text
-        ElseIf Len(locMatch.Groups("doiLink")) > 0 Then
-          pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
-                                                        pvtConfig.Basic.Macro.DoiResolver & locMatch.Groups("doiLink")
-        Else
-          pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
-                                                        pvtConfig.Basic.Macro.DoiResolver & locMatch.Groups("shortDoiLink")
+      With locWebLinkRange
+        .SetRange .Start + locMatch.FirstIndex, _
+                  .Start + locMatch.FirstIndex + Len(locMatch.Groups("link"))
+        If .Hyperlinks.Count = 0 Then
+          If Len(locMatch.Groups("httpLink")) > 0 Then
+            pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
+                                                          .Text
+          ElseIf Len(locMatch.Groups("doiLink")) > 0 Then
+            pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
+                                                          pvtConfig.Basic.Macro.DoiResolver & locMatch.Groups("doiLink")
+          Else
+            pvtBibliography.MainStory.Document.AddWebLink locWebLinkRange, _
+                                                          pvtConfig.Basic.Macro.DoiResolver & locMatch.Groups("shortDoiLink")
+          End If
+          refAffectedReferencesCt = refAffectedReferencesCt + 1
         End If
-        refAffectedReferencesCt = refAffectedReferencesCt + 1
-      End If
+      End With
     End If
   Else
     locResult = MessageOk
@@ -187,12 +202,14 @@ Friend Function SetInternalLinking() As ZtFMessageType
     If pvtCitationGroupsCt > 0 Then
       ' Correct delimiter and spaces at the end of the range if necessary.
       Set locDeleteRange = .Duplicate
-      locDeleteRange.Collapse wdCollapseEnd
-      locDeleteProcedures.SetRange locDeleteRange
-      locDeleteProcedures.MoveStartWhile locDeleteCharacters, wdBackward
-      If Len(locDeleteRange.Text) > 0 Then
-        locDeleteRange.Delete
-      End If
+      With locDeleteRange
+        .Collapse wdCollapseEnd
+        locDeleteProcedures.SetRange locDeleteRange
+        locDeleteProcedures.MoveStartWhile locDeleteCharacters, wdBackward
+        If Len(.Text) > 0 Then
+          .Delete
+        End If
+      End With
       
       ' Insert introducting text.
       .InsertAfter pvtConfig.User.BackwardLinkingStyle.DelimiterBefore
@@ -228,11 +245,11 @@ Friend Function SetInternalLinking() As ZtFMessageType
       .Delete ' Delete protection.
       locResult = MessageOk
     ElseIf pvtBibliography.ShowNoCitationError Then
-      locResult = pvtStartForm.MessageDisplay.Show("I couldn't find any citations of the selected reference." & vbNewLine & vbNewLine & _
-                                                     "You may procede, otherwise cancel.", _
-                                                   MessageCritical + MessageOkDisableCancel, _
-                                                   True, _
-                                                   locRange)
+      locResult = pvtMessageDisplay.Show("I couldn't find any citations of the selected reference." & vbNewLine & vbNewLine & _
+                                           "You may procede, otherwise cancel.", _
+                                         MessageCritical + MessageOkDisableCancel, _
+                                         True, _
+                                         locRange)
       If locResult = MessageDisable Then
         pvtBibliography.ShowNoCitationError = False
         locResult = MessageOk

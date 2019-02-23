@@ -9,17 +9,22 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtConfigFinalCitation.
 ' It preserves a part of the final configuration informations and methods to read them from ZtConfig.xml.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
-Private pvtResultRegExp As ZtRegDebuggingWrapper
-Private pvtHtmlTagsRegExp As ZtRegDebuggingWrapper
-Private pvtGivenNameRegExp As ZtRegDebuggingWrapper
+Private pvtResultRegExp As ZtRegExp
+Private pvtHtmlTagsRegExp As ZtRegExp
+Private pvtGivenNameRegExp As ZtRegExp
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -54,19 +59,19 @@ Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valXml As MSXML2.DOMDoc
 
 End Sub
 
-Friend Property Get ResultRegExp() As ZtRegDebuggingWrapper
+Friend Property Get ResultRegExp() As ZtRegExp
 
   Set ResultRegExp = pvtResultRegExp
   
 End Property
 
-Friend Property Get HtmlTagsRegExp() As ZtRegDebuggingWrapper
+Friend Property Get HtmlTagsRegExp() As ZtRegExp
 
   Set HtmlTagsRegExp = pvtHtmlTagsRegExp
   
 End Property
 
-Friend Property Get GivenNameRegExp() As ZtRegDebuggingWrapper
+Friend Property Get GivenNameRegExp() As ZtRegExp
 
   Set GivenNameRegExp = pvtGivenNameRegExp
   

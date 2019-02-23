@@ -9,10 +9,15 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtConfig.
 ' It preserves all configuration informations and methods to read them from ZtConfig.xml.
 ' It distributes these informations and work to ZtConfigBasic, ZtConfigUser, and ZtConfigFinal.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -26,7 +31,7 @@ Private Const PVT_RESOLVE_PROPERTY_REGEX_PATTERN As String = "(?<signsBefore>^|[
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
 Private pvtBasic As ZtConfigBasic
 Private pvtUserStylePresets As Collection
 Private pvtUser As ZtConfigUser
@@ -55,22 +60,24 @@ End Sub
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend/Public procedures and properties.
 ' All members that should be callable by CallByName procedure must be public.
-Friend Sub Initialize(ByVal valStartForm As ZtStartForm)
+Friend Sub Initialize(ByVal valMessageDisplay As ZtIMessageDisplayable)
 
   Dim locXmlPathFileName As String
   
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
   
   locXmlPathFileName = ThisDocument.Path & "\" & PVT_CONFIG_FILE_NAME
   pvtXml.Load locXmlPathFileName
   pvtXml.preserveWhiteSpace = True
   pvtControlCharacterRegExp.Initialize "XML control characters", _
                                        PVT_CONTROL_CHARACTER_REGEX_PATTERN, _
+                                       pvtMessageDisplay, _
                                        False, _
                                        True, _
                                        True
   pvtResolvePropertyRegExp.Initialize "XML resolve property", _
                                       PVT_RESOLVE_PROPERTY_REGEX_PATTERN, _
+                                      pvtMessageDisplay, _
                                       False, _
                                       True, _
                                       True
@@ -150,11 +157,11 @@ Friend Sub KeepFinal()
 
 End Sub
 
-Friend Sub RegExpFactory(ByRef refRegExp As ZtRegDebuggingWrapper, ByVal valName As String, ByVal valPattern As String, _
+Friend Sub RegExpFactory(ByRef refRegExp As ZtRegExp, ByVal valName As String, ByVal valPattern As String, _
   Optional ByVal valGlobal As Boolean = False, Optional ByVal valIgnoreCase As Boolean = False, Optional ByVal valMultiLine As Boolean = False)
 
-  Set refRegExp = New ZtRegDebuggingWrapper
-  refRegExp.Initialize Me, pvtStartForm, valName, valPattern, valGlobal, valIgnoreCase, valMultiLine
+  Set refRegExp = New ZtRegExp
+  refRegExp.Initialize valName, valPattern, pvtMessageDisplay, valGlobal, valIgnoreCase, valMultiLine
 
 End Sub
 
@@ -173,15 +180,17 @@ Friend Function ResolveTextElement(ByVal valElement As MSXML2.IXMLDOMNode, Optio
   Set locMatches = pvtControlCharacterRegExp.Execute(locResult)
   Do While locMatches.Count > 0
     For Each locMatch In locMatches
-      If Len(locMatch.Groups("hexNumber")) > 0 Then
-        locResult = Left$(locResult, locMatch.FirstIndex + Len(locMatch.Groups("signsBefore"))) & _
-                    ChrW$(CLng("&H" & locMatch.Groups("hexNumber"))) & _
-                    Right$(locResult, Len(locResult) - locMatch.FirstIndex - locMatch.Length)
-      Else
-        locResult = Left$(locResult, locMatch.FirstIndex + Len(locMatch.Groups("signsBefore"))) & _
-                    ChrW$(CLng(locMatch.Groups("decNumber"))) & _
-                    Right$(locResult, Len(locResult) - locMatch.FirstIndex - locMatch.Length)
-      End If
+      With locMatch
+        If Len(.Groups("hexNumber")) > 0 Then
+          locResult = Left$(locResult, .FirstIndex + Len(.Groups("signsBefore"))) & _
+                      ChrW$(CLng("&H" & .Groups("hexNumber"))) & _
+                      Right$(locResult, Len(locResult) - .FirstIndex - .Length)
+        Else
+          locResult = Left$(locResult, .FirstIndex + Len(.Groups("signsBefore"))) & _
+                      ChrW$(CLng(.Groups("decNumber"))) & _
+                      Right$(locResult, Len(locResult) - .FirstIndex - .Length)
+        End If
+      End With
       Exit For
     Next
     Set locMatches = pvtControlCharacterRegExp.Execute(locResult)
@@ -190,9 +199,11 @@ Friend Function ResolveTextElement(ByVal valElement As MSXML2.IXMLDOMNode, Optio
   Set locMatches = pvtResolvePropertyRegExp.Execute(locResult)
   Do While locMatches.Count > 0
     For Each locMatch In locMatches
-      locResult = Left$(locResult, locMatch.FirstIndex + Len(locMatch.Groups("signsBefore"))) & _
-                  CStr(ResolvePropertyScript(Me, locMatch.Groups("propertyString"))) & _
-                  Right$(locResult, Len(locResult) - locMatch.FirstIndex - locMatch.Length)
+      With locMatch
+        locResult = Left$(locResult, .FirstIndex + Len(.Groups("signsBefore"))) & _
+                    CStr(pvtResolvePropertyScript(Me, .Groups("propertyString"))) & _
+                    Right$(locResult, Len(locResult) - .FirstIndex - .Length)
+      End With
       Exit For
     Next
     Set locMatches = pvtResolvePropertyRegExp.Execute(locResult)
@@ -226,7 +237,7 @@ Friend Sub RegPieceFactory(ByVal valTextWithRegExpSyntax As String, ByVal valNam
   
   If refRegPiece Is Nothing Then
     Set refRegPiece = New ZtRegPiece
-    refRegPiece.Initialize valTextWithRegExpSyntax, valName
+    refRegPiece.Initialize valTextWithRegExpSyntax, valName, pvtMessageDisplay
   End If
   
 End Sub
@@ -273,3 +284,26 @@ Friend Function GetWordStoryTypes(ByRef refEnumNames As Variant) As WdStoryType(
   
 End Function
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+' Private procedures and properties.
+Private Function pvtResolvePropertyScript(ByVal valObject As Object, ByVal valPropertyList As String) As Variant
+
+  Dim locResult As Variant
+  Dim locFirstElementEndPosition As Integer
+  Dim locPropertyList As String
+  
+  locPropertyList = valPropertyList
+  locFirstElementEndPosition = InStr(locPropertyList, ".")
+  If locFirstElementEndPosition = 0 Then
+    locResult = CallByName(valObject, locPropertyList, VbGet)
+    pvtResolvePropertyScript = locResult
+  Else
+    Set locResult = CallByName(valObject, Left$(locPropertyList, locFirstElementEndPosition - 1), VbGet)
+    pvtResolvePropertyScript = pvtResolvePropertyScript(locResult, Right$(locPropertyList, Len(locPropertyList) - locFirstElementEndPosition))
+  End If
+  
+End Function
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+

@@ -9,15 +9,21 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtCitationGroup.
 ' It preserves information about a citation group, i.e. '[1-3, 7]'.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
 Private pvtStory As ZtIStory
 Private pvtField As Word.Field
 Private pvtFieldProcedures As ZtFieldProcedures
@@ -45,11 +51,11 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valStory As ZtIStory, ByVal valField As Word.Field, _
+Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valStory As ZtIStory, ByVal valField As Word.Field, _
   ByVal valOffset As Integer, ByVal valNr As Integer, Optional ByVal valPreviousCitationGroup As ZtCitationGroup = Nothing)
   
   Set pvtConfig = valConfig
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
   Set pvtStory = valStory
   Set pvtField = valField
   pvtFieldProcedures.Initialize pvtField
@@ -130,36 +136,46 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
   Set locBeforeProcedures = New ZtRangeProcedures
   Set locAfterProcedures = New ZtRangeProcedures
   
-  locCompleteProcedures.SetRange locCompleteRange
-  locCompleteProcedures.MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZeroPunctuation, wdBackward
-  locLengthBackup = Len(locCompleteRange.Text)
-  locCompleteProcedures.MoveStartUntil pvtConfig.Basic.Characters.PunctuationBreakField, -1
-  If locLengthBackup < Len(locCompleteRange.Text) Then
-    locSurroundingSigns = locSurroundingSigns Or SignBefore
-  End If
-  locCompleteProcedures.MoveEndWhile pvtConfig.Basic.Characters.Punctuation, wdForward
-  locLengthBackup = Len(locCompleteRange.Text)
-  locCompleteProcedures.MoveEndUntil pvtConfig.Basic.Characters.PunctuationBreakField, 1
-  If locLengthBackup < Len(locCompleteRange.Text) Then
-    locSurroundingSigns = locSurroundingSigns Or SignAfter
-  End If
+  With locCompleteProcedures
+    .SetRange locCompleteRange
+    .MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZeroPunctuation, wdBackward
+    locLengthBackup = Len(locCompleteRange.Text)
+    .MoveStartUntil pvtConfig.Basic.Characters.PunctuationBreakField, -1
+    If locLengthBackup < Len(locCompleteRange.Text) Then
+      locSurroundingSigns = locSurroundingSigns Or SignBefore
+    End If
+    .MoveEndWhile pvtConfig.Basic.Characters.Punctuation, wdForward
+    locLengthBackup = Len(locCompleteRange.Text)
+    .MoveEndUntil pvtConfig.Basic.Characters.PunctuationBreakField, 1
+    If locLengthBackup < Len(locCompleteRange.Text) Then
+      locSurroundingSigns = locSurroundingSigns Or SignAfter
+    End If
+  End With
   
-  locBeforeProcedures.SetRange locBeforeRange
-  locBeforeProcedures.MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZeroPunctuation, wdBackward
-  locBeforeProcedures.MoveStartUntil pvtConfig.Basic.Characters.PunctuationBreakField, -1
-  Set locBeforeBackup = locBeforeRange.Duplicate
-  locBeforeRange.Collapse wdCollapseStart
+  With locBeforeProcedures
+    .SetRange locBeforeRange
+    .MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZeroPunctuation, wdBackward
+    .MoveStartUntil pvtConfig.Basic.Characters.PunctuationBreakField, -1
+    Set locBeforeBackup = locBeforeRange.Duplicate
+    locBeforeRange.Collapse wdCollapseStart
+  End With
   
-  locAfterProcedures.SetRange locAfterRange
-  locAfterProcedures.MoveEndWhile pvtConfig.Basic.Characters.Punctuation, wdForward
-  locAfterProcedures.MoveEndUntil pvtConfig.Basic.Characters.PunctuationBreakField, 1
-  Set locAfterBackup = locAfterRange.Duplicate
-  locAfterRange.Collapse wdCollapseEnd
-
+  With locAfterProcedures
+    .SetRange locAfterRange
+    .MoveEndWhile pvtConfig.Basic.Characters.Punctuation, wdForward
+    .MoveEndUntil pvtConfig.Basic.Characters.PunctuationBreakField, 1
+    Set locAfterBackup = locAfterRange.Duplicate
+    locAfterRange.Collapse wdCollapseEnd
+  End With
+  
   ' Adjust punctuation.
   Set locMatch = pvtConfig.Final.CitationGroup.PunctuationRegExp(locSurroundingSigns).FirstMatch(locCompleteRange.Text)
   If Not locMatch Is Nothing Then
-    locResult = pvtConfig.Final.CitationGroup.PunctuationRegExp(locSurroundingSigns).Debugging(locMatch, locCompleteRange)
+    If pvtConfig.User.Macro.Debugging Then
+      locResult = pvtConfig.Final.CitationGroup.PunctuationRegExp(locSurroundingSigns).Debugging(locMatch, locCompleteRange)
+    Else
+      locResult = MessageOk
+    End If
     If locResult = MessageOk Then
       With locMatch
       
@@ -191,8 +207,8 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
           If Len(locBeforeBackup.Text) = locBeforeBackup.End - locBeforeBackup.Start And _
             Len(locAfterBackup.Text) = locAfterBackup.End - locAfterBackup.Start Then
             
+            locFindText = .Groups("signBefore") & .Groups("punctuationBefore") & .Groups("spaceBefore")
             With locBeforeRange
-              locFindText = locMatch.Groups("signBefore") & locMatch.Groups("punctuationBefore") & locMatch.Groups("spaceBefore")
               If Len(locFindText) > 0 Then
                 ZtSubprocedures.ResetFind .Find
                 With .Find
@@ -212,8 +228,8 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
             End With
     
             If locHasBeenChanged Then
+              locFindText = .Groups("punctuationAfter") & .Groups("signAfter")
               With locAfterRange
-                locFindText = locMatch.Groups("punctuationAfter") & locMatch.Groups("signAfter")
                 If Len(locFindText) > 0 Then
                   ZtSubprocedures.ResetFind .Find
                   With .Find
@@ -242,11 +258,11 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
             refNotCorrectedCt = refNotCorrectedCt + 1
             If pvtStory.Document.ShowManualAdjustation Then
               ' Disturbing comments or fields.
-              locResult = pvtStartForm.MessageDisplay.Show("The selected citation group must be changed manually!" & vbNewLine & vbNewLine & _
-                                                             "With 'Disable' this error won't be shown anymore, otherwise procede or cancel.", _
-                                                           MessageExclamation + MessageOkDisableCancel, _
-                                                           True, _
-                                                           locCompleteRange)
+              locResult = pvtMessageDisplay.Show("The selected citation group must be changed manually!" & vbNewLine & vbNewLine & _
+                                                   "With 'Disable' this error won't be shown anymore, otherwise procede or cancel.", _
+                                                 MessageExclamation + MessageOkDisableCancel, _
+                                                 True, _
+                                                 locCompleteRange)
               If locResult = MessageDisable Then
                 pvtStory.Document.ShowManualAdjustation = False
                 locResult = MessageOk
@@ -259,11 +275,11 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
       End With
     End If
   Else
-    locResult = pvtStartForm.MessageDisplay.Show("The citation group style you set in ZtConfig.xml seems not to apply to the selected citation group." & vbNewLine & vbNewLine & _
-                                                   "You may procede, otherwise cancel.", _
-                                                 MessageCritical + MessageOkCancel, _
-                                                 True, _
-                                                 locCompleteRange)
+    locResult = pvtMessageDisplay.Show("The citation group style you set in ZtConfig.xml seems not to apply to the selected citation group." & vbNewLine & vbNewLine & _
+                                         "You may procede, otherwise cancel.", _
+                                       MessageCritical + MessageOkCancel, _
+                                       True, _
+                                       locCompleteRange)
   End If
 
   AdjustPunctuation = locResult
@@ -275,7 +291,7 @@ OnErrorBeforeRange:
   With locBeforeRange
     If Err.Number = 4198 Then
       .MoveStart wdCharacter, 1
-      If Len(.Text) > 0 Then ' for a collapsed range Range.Characters.Count results in 1!
+      If Len(.Text) > 0 Then ' For a collapsed range Range.Characters.Count results in 1!
         .Delete
       End If
       .InsertBefore Right$(locNewBefore.ToString, locNewBefore.Length - 1)
@@ -290,7 +306,7 @@ OnErrorAfterRange:
   With locAfterRange
     If Err.Number = 4198 Then
       .MoveEnd wdCharacter, -1
-      If Len(.Text) > 0 Then ' for a collapsed range Range.Characters.Count results in 1!
+      If Len(.Text) > 0 Then ' For a collapsed range Range.Characters.Count results in 1!
         .Delete
       End If
       .InsertAfter Left$(locNewAfter.ToString, locNewAfter.Length - 1)
@@ -340,35 +356,41 @@ Friend Function SetInternalLinking() As ZtFMessageType
   
   If locMatches.Count > 0 Then
     For Each locMatch In locMatches
-      locResult = pvtConfig.Final.Citation.ResultRegExp.Debugging(locMatch, locRange)
-      If locResult = MessageCancel Then
-        Exit For
-      End If
-      locCitationStart = locRange.Start + locMatch.FirstIndex
-      locCitationEnd = locCitationStart + Len(locMatch.Groups("numbering"))
-      locReferenceNr = CInt(locMatch.Groups("number")) - 1
-      If locReferenceAfterLastNr = 0 Then
-        locReferenceAfterLastNr = locReferenceNr
-      End If
-      
-      locCitationRange.SetRange locCitationStart, locCitationEnd
-      
-      ' Keep citations.
-      For locReferenceCtr = locReferenceAfterLastNr To locReferenceNr
-        If locReferenceCtr = locReferenceNr Then
-          pvtCitationTextFactory locCitationTexts, locCitationTextsCt, locReferenceCtr, locCitationCtr = 0, locCitationRange
+      With locMatch
+        If pvtConfig.User.Macro.Debugging Then
+          locResult = pvtConfig.Final.Citation.ResultRegExp.Debugging(locMatch, locRange)
+          If locResult = MessageCancel Then
+            Exit For
+          End If
         Else
-          pvtCitationTextFactory locCitationTexts, locCitationTextsCt, locReferenceCtr, False
+          locResult = MessageOk
         End If
-      Next
-      
-      ' Prepare for range citation.
-      If Len(locMatch.Groups("rangeDelimiter")) > 0 Then
-        locReferenceAfterLastNr = locReferenceNr + 1
-      Else
-        locReferenceAfterLastNr = 0
-      End If
-      locCitationCtr = locCitationCtr + 1
+        locCitationStart = locRange.Start + .FirstIndex
+        locCitationEnd = locCitationStart + Len(.Groups("numbering"))
+        locReferenceNr = CInt(.Groups("number")) - 1
+        If locReferenceAfterLastNr = 0 Then
+          locReferenceAfterLastNr = locReferenceNr
+        End If
+        
+        locCitationRange.SetRange locCitationStart, locCitationEnd
+        
+        ' Keep citations.
+        For locReferenceCtr = locReferenceAfterLastNr To locReferenceNr
+          If locReferenceCtr = locReferenceNr Then
+            pvtCitationTextFactory locCitationTexts, locCitationTextsCt, locReferenceCtr, locCitationCtr = 0, locCitationRange
+          Else
+            pvtCitationTextFactory locCitationTexts, locCitationTextsCt, locReferenceCtr, False
+          End If
+        Next
+        
+        ' Prepare for range citation.
+        If Len(.Groups("rangeDelimiter")) > 0 Then
+          locReferenceAfterLastNr = locReferenceNr + 1
+        Else
+          locReferenceAfterLastNr = 0
+        End If
+        locCitationCtr = locCitationCtr + 1
+      End With
     Next
   
     ' Set linking.
@@ -379,11 +401,11 @@ Friend Function SetInternalLinking() As ZtFMessageType
     End If
     
   Else
-    locResult = pvtStartForm.MessageDisplay.Show("The citation group and citation styles you set in ZtConfig.xml seem not to apply to the selected citation group." & vbNewLine & vbNewLine & _
-                                                   "You may procede, otherwise cancel.", _
-                                                 MessageCritical + MessageOkCancel, _
-                                                 True, _
-                                                 locRange)
+    locResult = pvtMessageDisplay.Show("The citation group and citation styles you set in ZtConfig.xml seem not to apply to the selected citation group." & vbNewLine & vbNewLine & _
+                                         "You may procede, otherwise cancel.", _
+                                       MessageCritical + MessageOkCancel, _
+                                       True, _
+                                       locRange)
   End If
   
   SetInternalLinking = locResult

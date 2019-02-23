@@ -9,9 +9,14 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtRegExp.
 ' It capsules VBScript regexp, overcomes some shortcomings of it and automatically checks validity of a regex pattern.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -27,6 +32,8 @@ Private Const PVT_REPLACE_REGEXP_PATTERN As String = "(?:[^$]|(?:[^$]|^)(?:\${2}
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
+Private pvtDebugging As Boolean
+Private pvtMessageDisplay As ZtIMessageDisplayable
 Private pvtGroupRegExp As VBScript_RegExp_55.RegExp
 Private pvtGroupRegExpReplacements() As String
 Private pvtReplaceRegExp As VBScript_RegExp_55.RegExp
@@ -61,7 +68,7 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Sub Initialize(ByVal valName As String, ByVal valPattern As String, _
+Friend Sub Initialize(ByVal valName As String, ByVal valPattern As String, ByVal valMessageDisplay As ZtIMessageDisplayable, _
   Optional ByVal valGlobal As Boolean = False, Optional ByVal valIgnoreCase As Boolean = False, Optional ByVal valMultiLine As Boolean = False)
   
   Dim locGroupPattern As String
@@ -78,8 +85,9 @@ Friend Sub Initialize(ByVal valName As String, ByVal valPattern As String, _
   For locCtr = 0 To UBound(pvtGroupRegExpReplacements)
     locGroupPattern = VBA.Strings.Replace(locGroupPattern, pvtGroupRegExpReplacements(locCtr), "X")
   Next
-  Set locVBGroups = pvtGroupRegExp.Execute(locGroupPattern)
+  Set pvtMessageDisplay = valMessageDisplay
      
+  Set locVBGroups = pvtGroupRegExp.Execute(locGroupPattern)
   locCtr = 0
   Set locGroup = New ZtRegGroup
   locGroup.Initialize locCtr, "wholeMatch"
@@ -167,7 +175,7 @@ Friend Function FirstMatch(ByVal valSourceString As String) As ZtRegMatch
   
 End Function
 
-' valReplacement may be:
+' @valReplacement may be:
 '  - a substituion:
 '     - '${group name}'
 '     - '$group number', group number is 1-based
@@ -193,31 +201,45 @@ Friend Function Replace(ByVal valSourceString As String, ByVal valReplacement As
   
 End Function
 
-Friend Function DebugText(ByVal valMatch As ZtRegMatch) As String
+Friend Function Debugging(ByVal valMatch As ZtRegMatch, ByVal valRange As Word.Range) As ZtFMessageType
 
-  Dim locMsgText As ZtStringBuilder
+  Dim locResult As ZtFMessageType
+  Dim locMessageText As ZtStringBuilder
   Dim locGroup As ZtRegGroup
-    
-  Set locMsgText = New ZtStringBuilder
-  With locMsgText
-    .Append "The '"
-    .Append pvtName
-    .Append "' regex has found the following groups in the selected range:"
-    .Append vbNewLine
-    .Append vbNewLine
-    For Each locGroup In pvtGroups
-      .Append locGroup.Name
-      .Append ": "
-      .Append "'"
-      .Append valMatch.Groups(locGroup.Nr)
-      .Append "'"
+
+  If pvtDebugging Then
+    Set locMessageText = New ZtStringBuilder
+    With locMessageText
+      .Append "The '"
+      .Append pvtName
+      .Append "' regex has found the following groups in the selected range:"
       .Append vbNewLine
       .Append vbNewLine
-    Next
-    .RemoveFromEnd 2
-  End With
+      For Each locGroup In pvtGroups
+        .Append locGroup.Name
+        .Append ": "
+        .Append "'"
+        .Append valMatch.Groups(locGroup.Nr)
+        .Append "'"
+        .Append vbNewLine
+        .Append vbNewLine
+        .Append "With 'Disable' this debug information won't be shown anymore, otherwise procede or cancel."
+      Next
+    End With
+    locResult = pvtMessageDisplay.Show(locMessageText.ToString, MessageOkDisableCancel + MessageInformation, True, valRange)
+    If locResult = MessageDisable Then
+      pvtDebugging = False
+      locResult = MessageOk
+    End If
+  Else
+    locResult = MessageOk
+  End If
   
-  DebugText = locMsgText.ToString
+  If locResult = vbOK Then
+    Debugging = MessageOk
+  ElseIf locResult = vbCancel Then
+    Debugging = MessageCancel
+  End If
 
 End Function
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -9,9 +9,14 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtFieldProcedures.
 ' It contains Word.Field specific procedures.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -34,7 +39,9 @@ Friend Function GetCompleteRange() As Word.Range
   Dim locRange As Word.Range
   
   Set locRange = pvtField.Result
-  locRange.SetRange pvtField.Code.Start - 1, locRange.End + 1
+  With locRange
+    .SetRange pvtField.Code.Start - 1, .End + 1
+  End With
   
   Set GetCompleteRange = locRange
 

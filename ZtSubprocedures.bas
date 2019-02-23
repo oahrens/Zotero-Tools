@@ -1,10 +1,18 @@
 Attribute VB_Name = "ZtSubprocedures"
 Option Explicit
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Helping subprocedures.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+' Public procedures.
 Public Function AddLeadingZeros(ByVal valNr As Integer, ByVal valDigitsCt As Integer) As String
 
   AddLeadingZeros = String$(valDigitsCt - Len(CStr(valNr)), "0") & CStr(valNr)
@@ -90,24 +98,6 @@ Public Function ArrayContains(ByVal valMember As Variant, ByRef refArray As Vari
   
 End Function
 
-Public Function ResolvePropertyScript(ByVal valObject As Object, ByVal valPropertyList As String) As Variant
-
-  Dim locResult As Variant
-  Dim locFirstElementEndPosition As Integer
-  Dim locPropertyList As String
-  
-  locPropertyList = valPropertyList
-  locFirstElementEndPosition = InStr(locPropertyList, ".")
-  If locFirstElementEndPosition = 0 Then
-    locResult = CallByName(valObject, locPropertyList, VbGet)
-    ResolvePropertyScript = locResult
-  Else
-    Set locResult = CallByName(valObject, Left$(locPropertyList, locFirstElementEndPosition - 1), VbGet)
-    ResolvePropertyScript = ResolvePropertyScript(locResult, Right$(locPropertyList, Len(locPropertyList) - locFirstElementEndPosition))
-  End If
-  
-End Function
-
 Public Function GetPath(ByVal valPathAndFileName As String) As String
 
   Dim locSeparatorPosition As Integer
@@ -138,4 +128,5 @@ Public Function GetExtension(ByVal valPathAndFileName As String) As String
   GetExtension = Right$(valPathAndFileName, Len(valPathAndFileName) - locDotPosition + 1)
   
 End Function
+' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 

@@ -10,9 +10,14 @@ Attribute VB_Exposed = False
 Option Explicit
 Implements ZtIProcedure
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtSetInternalLinking.
 ' This is the 'Set internal linking between citations and references' procedure.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -20,9 +25,9 @@ Implements ZtIProcedure
 ' Private variables.
 Private pvtName As String
 Private pvtDescription As String
-Private pvtFunctions As ZtProcedureFunctions
 Private pvtStepsCt As Integer
 Private pvtDocument As ZtDocument
+Private pvtRemoveInternalLinkingProcedure As ZtRemoveInternalLinking
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -54,29 +59,13 @@ Private Property Get ZtIProcedure_Description() As String
   
 End Property
 
-Private Property Get ZtIProcedure_ProcedureFunctions() As ZtProcedureFunctions
+Private Function ZtIProcedure_Start(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valAppPrepare As ZtIAppPreparable, ByVal valProcedureInitializer As ZtIProcedureInitializable, _
+  ByVal valDocument As ZtDocument, ByRef refLicenseShown As Boolean) As ZtFMessageType
 
-  Set ZtIProcedure_ProcedureFunctions = Me.ProcedureFunctions
-  
-End Property
-
-Private Function ZtIProcedure_Start(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByRef refLicenceShown As Boolean) As ZtFMessageType
-
-  ZtIProcedure_Start = Me.Start(valConfig, valStartForm, valDocument, refLicenceShown)
+  ZtIProcedure_Start = Me.Start(valConfig, valMessageDisplay, valProgress, valAppPrepare, valProcedureInitializer, valDocument, refLicenseShown)
   
 End Function
-
-Private Sub ZtIProcedure_Prepare()
-
-  Me.Prepare
-  
-End Sub
-
-Private Sub ZtIProcedure_Unprepare()
-
-  Me.Unprepare
-  
-End Sub
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -95,80 +84,69 @@ Friend Property Get Description() As String
   
 End Property
 
-Friend Property Get ProcedureFunctions() As ZtProcedureFunctions
+Friend Property Set RemoveInternaleLinkingProcedure(ByVal valProcedure As ZtRemoveInternalLinking)
 
-  Set ProcedureFunctions = pvtFunctions
+  Set pvtRemoveInternalLinkingProcedure = valProcedure
   
 End Property
 
-Friend Function Start(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByRef refLicenceShown As Boolean) As ZtFMessageType
+Friend Function Start(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valAppPrepare As ZtIAppPreparable, ByVal valProcedureInitializer As ZtIProcedureInitializable, _
+  ByVal valDocument As ZtDocument, ByRef refLicenseShown As Boolean) As ZtFMessageType
 
   Dim locResult As ZtFMessageType
   
   Set pvtDocument = valDocument
-  With valStartForm.RemoveInternalLinkingProcedure
-    Set pvtFunctions = .ProcedureFunctions
+  With pvtRemoveInternalLinkingProcedure
     .ToResume = True
-    locResult = .Start(valConfig, valStartForm, pvtDocument, refLicenceShown)
+    locResult = .Start(valConfig, valMessageDisplay, valProgress, valAppPrepare, valProcedureInitializer, pvtDocument, refLicenseShown)
     .ToResume = False
   End With
   
   If locResult = MessageOk Then
-    valStartForm.Progress.Reset
-    locResult = valStartForm.MessageDisplay.Show("Any previous internal linking has been removed and in the next step new one will be done." & vbNewLine & vbNewLine & _
-                                                   "Your citations are up to date?" & vbNewLine & vbNewLine & _
-                                                   "You may procede, otherwise cancel and run the Zotero 'Refresh' command before starting this procedure again.", _
-                                                 MessageQuestion + MessageOkCancel)
+    valProgress.Reset
+    locResult = valMessageDisplay.Show("Any previous internal linking has been removed and in the next step new one will be done." & vbNewLine & vbNewLine & _
+                                         "Your citations are up to date?" & vbNewLine & vbNewLine & _
+                                         "You may procede, otherwise cancel and run the Zotero 'Refresh' command before starting this procedure again.", _
+                                       MessageQuestion + MessageOkCancel)
     If locResult = MessageOk Then
       If Len(valConfig.User.CitationGroupStyle.Prefix) = 0 And Len(valConfig.User.CitationStyle.Prefix) = 0 And Len(valConfig.User.CitationStyle.Suffix) = 0 Then
         If Not valConfig.User.Macro.CitationInsertZeroWidthSpace Then
-          locResult = valStartForm.MessageDisplay.Show("You should perhaps set 'user.macro.citationInsertZeroWidthSpace' in ZtConfig.xml to 'True', to let all internal hyperlinks work correctly. " & _
-                                                         "For further explanations, please have a look at the configuration file." & vbNewLine & vbNewLine & _
-                                                         "You may procede, otherwise cancel.", _
-                                                       MessageQuestion + MessageOkCancel)
+          locResult = valMessageDisplay.Show("You should perhaps set 'user.macro.citationInsertZeroWidthSpace' in ZtConfig.xml to 'True', to let all internal hyperlinks work correctly. " & _
+                                               "For further explanations, please have a look at the configuration file." & vbNewLine & vbNewLine & _
+                                               "You may procede, otherwise cancel.", _
+                                             MessageQuestion + MessageOkCancel)
         Else
-          locResult = valStartForm.MessageDisplay.Show("You have set 'user.macro.citationInsertZeroWidthSpace' in ZtConfig.xml to 'True', to let all hyperlinks work correctly. " & _
-                                                         "Please, note that Zotero will ask you on some citations, whether it should discard them for " & _
-                                                         "retaining some changes on them. ALWAYS ANSWER THIS QUESTION WITH 'NO'!" & vbNewLine & _
-                                                         "To prevent these questions you can do one of the following:" & vbNewLine & _
-                                                         vbTab & "- run Word's undo command before Zotero's refresh" & vbNewLine & _
-                                                         vbTab & "- run '" & valStartForm.RemoveInternalLinkingProcedure.Name & "' procedure before Zotero's refresh" & vbNewLine & vbNewLine & _
-                                                         "You may procede, otherwise cancel.", _
-                                                       MessageQuestion + MessageOkCancel)
+          locResult = valMessageDisplay.Show("You have set 'user.macro.citationInsertZeroWidthSpace' in ZtConfig.xml to 'True', to let all hyperlinks work correctly. " & _
+                                               "Please, note that Zotero will ask you on some citations, whether it should discard them for " & _
+                                               "retaining some changes on them. ALWAYS ANSWER THIS QUESTION WITH 'NO'!" & vbNewLine & _
+                                               "To prevent these questions you can do one of the following:" & vbNewLine & _
+                                               vbTab & "- run Word's undo command before Zotero's refresh" & vbNewLine & _
+                                               vbTab & "- run '" & pvtRemoveInternalLinkingProcedure.Name & "' procedure before Zotero's refresh" & vbNewLine & vbNewLine & _
+                                               "You may procede, otherwise cancel.", _
+                                             MessageQuestion + MessageOkCancel)
         End If
       End If
       
       If locResult = MessageOk Then
-        valStartForm.Progress.SetStepsCt pvtGetStepsCt
+        valProgress.SetStepsCt pvtGetStepsCt
         pvtDocument.Repaginate
-        locResult = pvtFunctions.Initialize(valConfig, valStartForm, pvtDocument, pvtName, refLicenceShown, True, True)
+        locResult = valProcedureInitializer.Start(valConfig, valMessageDisplay, valAppPrepare, pvtDocument, pvtName, refLicenseShown, True, True)
         If locResult = MessageOk Then
           locResult = pvtDocument.SetInternalLinking
-          valStartForm.Progress.SetCompleted
+          valProgress.SetCompleted
         End If
       End If
     End If
   End If
-  pvtFunctions.Finish locResult, _
-                      IIf(locResult = MessageOk, _
-                          "You can also use the '" & valStartForm.RemoveInternalLinkingProcedure.Name & "' procedure for this purpose.", _
-                          vbNullString)
+  valProcedureInitializer.Finish locResult, _
+                                 IIf(locResult = MessageOk, _
+                                     "You can also use the '" & pvtRemoveInternalLinkingProcedure.Name & "' procedure for this purpose.", _
+                                     vbNullString)
   
   Start = locResult
   
 End Function
-
-Friend Sub Prepare()
-
-  pvtFunctions.Prepare
-  
-End Sub
-
-Friend Sub Unprepare()
-
-  pvtFunctions.Unprepare
-  
-End Sub
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 

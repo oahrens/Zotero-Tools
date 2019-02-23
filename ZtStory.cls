@@ -10,17 +10,23 @@ Attribute VB_Exposed = False
 Option Explicit
 Implements ZtIStory
 
+
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Class ZtStory.
 ' It preserves informations and procedures of a Word story inside a document.
 ' E.g. the main text, footnotes, endnotes, and comments are different Word stories.
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private variables.
 Private pvtConfig As ZtConfig
-Private pvtStartForm As ZtStartForm
+Private pvtMessageDisplay As ZtIMessageDisplayable
+Private pvtProgress As ZtProgress
 Private pvtDocument As ZtDocument
 Private pvtRange As Word.Range
 Private pvtCitationGroups() As ZtCitationGroup
@@ -44,9 +50,10 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Private interface procedures and properties directing to Friend procedures and properties below.
-Private Sub ZtIStory_Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
+Private Sub ZtIStory_Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
   
-  Me.Initialize valConfig, valStartForm, valDocument, valRange
+  Me.Initialize valConfig, valMessageDisplay, valProgress, valDocument, valRange
   
 End Sub
 
@@ -115,10 +122,12 @@ End Sub
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend procedures and properties.
-Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valStartForm As ZtStartForm, ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
+Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valMessageDisplay As ZtIMessageDisplayable, ByVal valProgress As ZtProgress, _
+  ByVal valDocument As ZtDocument, ByVal valRange As Word.Range)
   
   Set pvtConfig = valConfig
-  Set pvtStartForm = valStartForm
+  Set pvtMessageDisplay = valMessageDisplay
+  Set pvtProgress = valProgress
   Set pvtDocument = valDocument
   Set pvtRange = valRange.Duplicate
   
@@ -173,7 +182,7 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
     
     If .Fields.Count > 0 Then
       pvtKeepFields locFields
-      pvtStartForm.Progress.SetStep UBound(locFields)
+      pvtProgress.SetStep UBound(locFields)
       For locCtr = UBound(locFields) To 0 Step -1
         Set locField = locFields(locCtr)
         With locField
@@ -193,16 +202,16 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
             End If
           End If
         End With
-        pvtStartForm.Progress.SetSubstep
+        pvtProgress.SetSubstep
       Next
     Else
-      pvtStartForm.Progress.SetCompleteStep
+      pvtProgress.SetCompleteStep
     End If
     
     ' Delete bookmarks that have been referenced by internal hyperlinks.
     If .Bookmarks.Count > 0 Then
       pvtKeepBookmarks locBookmarks
-      pvtStartForm.Progress.SetStep UBound(locBookmarks)
+      pvtProgress.SetStep UBound(locBookmarks)
       For locCtr = UBound(locBookmarks) To 0 Step -1
         Set locBookmark = locBookmarks(locCtr)
         With locBookmark
@@ -213,9 +222,9 @@ Friend Function RemoveInternalLinking() As ZtFMessageType
           End If
         End With
       Next
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Else
-      pvtStartForm.Progress.SetCompleteStep
+      pvtProgress.SetCompleteStep
     End If
         
   End With
@@ -232,9 +241,9 @@ Friend Function SetInternalLinking() As ZtFMessageType
   Dim locResult As ZtFMessageType
   
   If pvtConfig.User.Macro.WithBackwardLinking Then
-    pvtStartForm.Progress.SetStep pvtCitationGroupsCt * 2
+    pvtProgress.SetStep pvtCitationGroupsCt * 2
   Else
-    pvtStartForm.Progress.SetStep pvtCitationGroupsCt
+    pvtProgress.SetStep pvtCitationGroupsCt
   End If
   For locCitationGroupCtr = 0 To pvtCitationGroupsCt - 1
     Set locCitationGroup = pvtCitationGroups(locCitationGroupCtr)
@@ -244,12 +253,12 @@ Friend Function SetInternalLinking() As ZtFMessageType
       pvtDocument.MainStory.GetCaptions locCaptions
       pvtKeepStoryCorrelations
       locCitationGroup.SetBookmark locCaptions, pvtCorrelations, pvtCorrelationsCt
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     End If
     
     ' Set hyperlink on each citation.
     locResult = locCitationGroup.SetInternalLinking
-    pvtStartForm.Progress.SetSubstep
+    pvtProgress.SetSubstep
     If locResult = MessageCancel Then
       Exit For
     End If
@@ -264,10 +273,10 @@ Friend Function AdjustPunctuation(ByRef refAffectedCt As Integer, ByRef refNotAf
   Dim locCitationGroupCtr As Integer
   Dim locResult As ZtFMessageType
   
-  pvtStartForm.Progress.SetStep pvtCitationGroupsCt
+  pvtProgress.SetStep pvtCitationGroupsCt
   For locCitationGroupCtr = 0 To pvtCitationGroupsCt - 1
     locResult = pvtCitationGroups(locCitationGroupCtr).AdjustPunctuation(refAffectedCt, refNotAffectedCt, refNotCorrectedCt)
-    pvtStartForm.Progress.SetSubstep
+    pvtProgress.SetSubstep
     If locResult = MessageCancel Then
       Exit For
     End If
@@ -281,11 +290,11 @@ Friend Sub ResolveCitationGroups(ByRef refAffectedCt As Integer)
 
   Dim locCitationGroupCtr As Integer
   
-  pvtStartForm.Progress.SetStep pvtCitationGroupsCt
+  pvtProgress.SetStep pvtCitationGroupsCt
   For locCitationGroupCtr = 0 To pvtCitationGroupsCt - 1
     pvtCitationGroups(locCitationGroupCtr).Resolve
     refAffectedCt = refAffectedCt + 1
-    pvtStartForm.Progress.SetSubstep
+    pvtProgress.SetSubstep
   Next
   pvtCitationGroupsCt = -1
 
@@ -295,7 +304,7 @@ Friend Sub UpdateAllFields()
 
   Dim locField As Word.Field
       
-  ' to prevent pop-up "Word cannot undo this action. Do you want to continue?"
+  ' To prevent pop-up 'Word cannot undo this action. Do you want to continue?'.
   If ZtSubprocedures.ArrayContains(pvtRange.StoryType, pvtConfig.Basic.Word.IndividuallyUpdateFieldStoryTypes) Then
     
     For Each locField In pvtRange.Fields
@@ -331,13 +340,15 @@ Friend Sub JoinCitationGroups(ByRef refAffectedCt As Integer, ByRef refNotAffect
   If valRange Is Nothing Then
     For locCitationGroupCtr = pvtCitationGroupsCt - 1 To 1 Step -1
       Set locInsertRemnantsRange = pvtCitationGroups(locCitationGroupCtr).ResultRange
-      locInsertRemnantsRange.Move wdCharacter, 1
-      locBetweenText = pvtCitationGroups(locCitationGroupCtr).JoinWithPrevious(True, refAffectedCt, refNotAffectedCt)
-      If Len(locBetweenText) > 0 Then
-        locInsertRemnantsRange.MoveStart wdCharacter, -Len(locBetweenText)
-        locInsertRemnantsRange.Delete
-      End If
-      pvtStartForm.Progress.SetSubstep
+      With locInsertRemnantsRange
+        .Move wdCharacter, 1
+        locBetweenText = pvtCitationGroups(locCitationGroupCtr).JoinWithPrevious(True, refAffectedCt, refNotAffectedCt)
+        If Len(locBetweenText) > 0 Then
+          .MoveStart wdCharacter, -Len(locBetweenText)
+          .Delete
+        End If
+      End With
+      pvtProgress.SetSubstep
     Next
   Else
     For locCitationGroupCtr = pvtCitationGroupsCt - 1 To 1 Step -1
@@ -355,14 +366,16 @@ Friend Sub JoinCitationGroups(ByRef refAffectedCt As Integer, ByRef refNotAffect
       ElseIf pvtCitationGroups(locCitationGroupCtr).ResultRange.Start < valRange.Start Then
         Exit For
       End If
-      pvtStartForm.Progress.SetSubstep
+      pvtProgress.SetSubstep
     Next
     
     If locCitationGroupIsFound Then
       Set locInsertRemnantsProcedures = New ZtRangeProcedures
-      locInsertRemnantsProcedures.SetRange locInsertRemnantsRange
-      locInsertRemnantsProcedures.MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZero, wdBackward
-      locInsertRemnantsProcedures.MoveEndWhile pvtConfig.Basic.Characters.SpaceWOZero, wdForward
+      With locInsertRemnantsProcedures
+        .SetRange locInsertRemnantsRange
+        .MoveStartWhile pvtConfig.Basic.Characters.SpaceWOZero, wdBackward
+        .MoveEndWhile pvtConfig.Basic.Characters.SpaceWOZero, wdForward
+      End With
       
       locBetweenText = pvtConfig.Final.CitationGroup.BetweenDeleteAffixedSpaceRegExp.Replace( _
                          pvtConfig.Final.CitationGroup.BetweenDeleteMultipleSpaceRegExp.Replace( _
@@ -425,11 +438,15 @@ Private Sub pvtKeepStoryCorrelations()
     pvtCorrelationsCt = 0
     If pvtRange.StoryType = wdFootnotesStory Then
       For Each locFootnote In pvtDocument.Footnotes
-        pvtCorrelationFactory locFootnote.Reference.Start, locFootnote.Range.Start
+        With locFootnote
+          pvtCorrelationFactory .Reference.Start, .Range.Start
+        End With
       Next
     ElseIf pvtRange.StoryType = wdEndnotesStory Then
       For Each locEndnote In pvtDocument.Endnotes
-        pvtCorrelationFactory locEndnote.Reference.Start, locEndnote.Range.Start
+        With locEndnote
+          pvtCorrelationFactory .Reference.Start, .Range.Start
+        End With
       Next
     End If
   End If
@@ -450,9 +467,9 @@ Private Sub pvtCitationGroupFactory(ByVal valField As Word.Field)
   ReDim Preserve pvtCitationGroups(pvtCitationGroupsCt)
   Set pvtCitationGroups(pvtCitationGroupsCt) = New ZtCitationGroup
   If pvtCitationGroupsCt = 0 Then
-    pvtCitationGroups(pvtCitationGroupsCt).Initialize pvtConfig, pvtStartForm, Me, valField, pvtCitationGroupsOffset, pvtCitationGroupsCt
+    pvtCitationGroups(pvtCitationGroupsCt).Initialize pvtConfig, pvtMessageDisplay, Me, valField, pvtCitationGroupsOffset, pvtCitationGroupsCt
   Else
-    pvtCitationGroups(pvtCitationGroupsCt).Initialize pvtConfig, pvtStartForm, Me, valField, pvtCitationGroupsOffset, pvtCitationGroupsCt, pvtCitationGroups(pvtCitationGroupsCt - 1)
+    pvtCitationGroups(pvtCitationGroupsCt).Initialize pvtConfig, pvtMessageDisplay, Me, valField, pvtCitationGroupsOffset, pvtCitationGroupsCt, pvtCitationGroups(pvtCitationGroupsCt - 1)
     Set pvtCitationGroups(pvtCitationGroupsCt - 1).NextCitationGroup = pvtCitationGroups(pvtCitationGroupsCt)
   End If
   pvtCitationGroupsCt = pvtCitationGroupsCt + 1

@@ -15,11 +15,37 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Implements ZtIPreparable
+
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Form ZtStartForm.
 ' Start this form to run the macro (press F5).
+'
+' Zotero Tools.
+' This software is under Revised ('New') BSD license.
+' Copyright © 2019, Olaf Ahrens. All rights reserved.
+'
+'    Redistribution and use in source and binary forms, with or without
+'    modification, are permitted provided that the following conditions are met:
+'     * Redistributions of source code must retain the above copyright
+'       notice, this list of conditions and the following disclaimer.
+'     * Redistributions in binary form must reproduce the above copyright
+'       notice, this list of conditions and the following disclaimer in the
+'       documentation and/or other materials provided with the distribution.
+'     * Neither the name of the copyright holder nor the
+'       names of its contributors may be used to endorse or promote products
+'       derived from this software without specific prior written permission.
+'
+'    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+'    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+'    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+'    DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+'    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+'    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+'    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+'    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+'    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+'    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -41,7 +67,8 @@ Private pvtWordInvisibleCheck As ZtCheckBox
 Private pvtCitationZeroWidthSpaceCheck As ZtCheckBox
 Private pvtBackwardLinkingCheck As ZtCheckBox
 Private pvtDebuggingCheck As ZtCheckBox
-Private pvtLicenceShown As Boolean
+Private pvtLicenseShown As Boolean
+Private pvtAppPrepare As ZtAppPreparer
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -60,8 +87,9 @@ Private Sub UserForm_Initialize()
   pvtProgress.Initialize SubstepsLabel0, SubstepsLabel1, StepsLabel, SubstepsFrame.Width, StepsFrame.Width
   pvtProgress.Reset
   
+  Set pvtAppPrepare = New ZtAppPreparer
   Set pvtMessageDisplay = New ZtMessageDisplay
-  pvtMessageDisplay.Initialize Me, InformationBox, ProcedureProcedeButton, ProcedureCancelButton, ProcedureDisableButton
+  pvtMessageDisplay.Initialize InformationBox, ProcedureProcedeButton, ProcedureCancelButton, ProcedureDisableButton, pvtAppPrepare
   pvtMessageDisplay.Clear
   
   Set pvtWordInvisibleCheck = New ZtCheckBox
@@ -75,8 +103,10 @@ Private Sub UserForm_Initialize()
   
   ' Keep all style presets (sorted).
   Set pvtConfig = New ZtConfig
-  pvtConfig.Initialize Me
-  pvtConfig.KeepUserStylePresets
+  With pvtConfig
+    .Initialize pvtMessageDisplay
+    .KeepUserStylePresets
+  End With
   
   ' Insert all style presets into listbox.
   For Each locStylePresetObj In pvtConfig.UserStylePresets
@@ -93,27 +123,28 @@ Private Sub UserForm_Initialize()
   
   ' Initialize all procedures.
   Set pvtProcedures = New Collection
-  
-  Set locProcedure = New ZtSetWebLinks
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtSetInternalLinking
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtRemoveInternalLinking
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtJoinCitationGroupsSelection
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtJoinCitationGroupsAll
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtAdjustPunctuation
-  pvtProcedures.Add locProcedure, locProcedure.Name
-  
-  Set locProcedure = New ZtResolveUnreachableCitations
-  pvtProcedures.Add locProcedure, locProcedure.Name
+  With pvtProcedures
+    Set locProcedure = New ZtSetWebLinks
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtSetInternalLinking
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtRemoveInternalLinking
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtJoinCitationGroupsSelection
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtJoinCitationGroupsAll
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtAdjustPunctuation
+    .Add locProcedure, locProcedure.Name
+    
+    Set locProcedure = New ZtResolveUnreachableCitations
+    .Add locProcedure, locProcedure.Name
+  End With
   
   ' Insert all procedure names into listbox.
   For Each locProcedure In pvtProcedures
@@ -189,12 +220,20 @@ End Sub
 Private Sub ProcedureStartButton_Click()
 
   Dim locDocument As ZtDocument
+  Dim locSetInternalLinkingProcedure As ZtSetInternalLinking
+  Dim locProcedureInitializer As ZtProcedureInitializer
   
   On Error GoTo OnError
   pvtEnableMacroControls False
   Set locDocument = New ZtDocument
-  locDocument.Initialize pvtConfig, Me, Application.Documents.Item(DocumentList.Value)
-  pvtCurrentProcedure.Start pvtConfig, Me, locDocument, pvtLicenceShown
+  locDocument.Initialize pvtConfig, Application.Documents.Item(DocumentList.Value), pvtMessageDisplay, pvtProgress
+  pvtAppPrepare.Initialize pvtConfig, locDocument
+  Set locProcedureInitializer = New ZtProcedureInitializer
+  If TypeOf pvtCurrentProcedure Is ZtSetInternalLinking Then
+    Set locSetInternalLinkingProcedure = pvtCurrentProcedure
+    Set locSetInternalLinkingProcedure.RemoveInternaleLinkingProcedure = pvtRemoveInternalLinkingProcedure
+  End If
+  pvtCurrentProcedure.Start pvtConfig, pvtMessageDisplay, pvtProgress, pvtAppPrepare, locProcedureInitializer, locDocument, pvtLicenseShown
   pvtProgress.Reset
   pvtEnableMacroControls True
   
@@ -222,71 +261,22 @@ Private Sub UserForm_Terminate()
   MacroEndButton_Click
   
 End Sub
-
-Private Sub ZtIPreparable_Prepare()
-
-  Me.Prepare
-  
-End Sub
-
-Private Sub ZtIPreparable_Unprepare()
-
-  Me.Unprepare
-  
-End Sub
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 ' Friend/Public procedures and properties.
 ' All members that should be callable by CallByName procedure must be public.
-Friend Sub Prepare()
-
-  pvtCurrentProcedure.Prepare
-  
-End Sub
-
-Friend Sub Unprepare()
-
-  pvtCurrentProcedure.Unprepare
-  
-End Sub
-
-Friend Property Get RemoveInternalLinkingProcedure() As ZtRemoveInternalLinking
-
-  Dim locProcedure As ZtIProcedure
-  
-  For Each locProcedure In pvtProcedures
-    If TypeOf locProcedure Is ZtRemoveInternalLinking Then
-      Set RemoveInternalLinkingProcedure = locProcedure
-      Exit Property
-    End If
-  Next
-  
-End Property
-
-Friend Property Get Progress() As ZtProgress
-
-  Set Progress = pvtProgress
-  
-End Property
-
-Friend Property Get MessageDisplay() As ZtMessageDisplay
-
-  Set MessageDisplay = pvtMessageDisplay
-  
-End Property
-
 Public Property Let WordInvisible(ByVal valInvisible As Boolean)
 
   pvtConfig.User.Macro.WordIsInvisibleWhileOperation = valInvisible
-  
+
 End Property
 
 Public Property Get WordInvisible() As Boolean
 
   WordInvisible = pvtConfig.User.Macro.WordIsInvisibleWhileOperation
-  
+
 End Property
 
 Public Property Let CitationZeroWidthSpace(ByVal valWithSpace As Boolean)
@@ -334,9 +324,11 @@ Private Sub pvtEnableMacroControls(ByVal valEnable As Boolean)
   Dim locControl As MSForms.Control
   
   For Each locControl In Me.Controls
-    If locControl.Tag = "Macro" Then
-      locControl.Enabled = valEnable
-    End If
+    With locControl
+      If .Tag = "Macro" Then
+        .Enabled = valEnable
+      End If
+    End With
   Next
   pvtWordInvisibleCheck.EnabledCacheEnabled = valEnable
   pvtCitationZeroWidthSpaceCheck.EnabledCacheEnabled = valEnable
@@ -346,4 +338,17 @@ Private Sub pvtEnableMacroControls(ByVal valEnable As Boolean)
   DoEvents
   
 End Sub
+
+Private Property Get pvtRemoveInternalLinkingProcedure() As ZtRemoveInternalLinking
+
+  Dim locProcedure As ZtIProcedure
+  
+  For Each locProcedure In pvtProcedures
+    If TypeOf locProcedure Is ZtRemoveInternalLinking Then
+      Set pvtRemoveInternalLinkingProcedure = locProcedure
+      Exit Property
+    End If
+  Next
+  
+End Property
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

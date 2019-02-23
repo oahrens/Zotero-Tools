@@ -33,7 +33,7 @@ Tools for Zotero (citation and reference management software).
 		<p>This function also involves an undo function.</p>
 	<p><h4>Set web links in references</h4></p>
 		<p>This function sets hyperlinks on web addressed in Zotero-generated bibliographies. It works for following address formats:</p>
-			<ul><li>http/https links</li>
+			<ul><li>http or https links</li>
 				<li>doi links</li>
 				<li>short doi links</li></ul>
 <p><h3>The technique:</h3></p>

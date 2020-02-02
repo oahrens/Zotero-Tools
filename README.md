@@ -39,7 +39,7 @@ Tools for Zotero (citation and reference management software).
 <p><h3>The technique:</h3></p>
 	<p>Zotero Tools are programmed as Visual Basic for Applications (VBA) macro. They can be configured via an XML file. By this they can be addapted to many (perhaps any) numeric citation style. Some of them do also work for author-year styles.</p>
 <p><h3>Installation:</h3></p>
-	<ol type="1"><li>Import all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
+	<ol type="1"><li>Import all files except <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into <i>Normal.dotm</i>:</li>
 		<ol type="i"><li>Open VBA editor by pressing Alt-F11 in Word.</li>
 		<li>Open a Windows explorer window and navigate to the folder where you have saved the Zotero Tools files.</li>
 		<li>Pull all files exept <i>ZtConfig.xml</i> and <i>ZtReadMe.txt</i> into the VBA editor window and let them fall on 'Normal' in the project explorer lefthand side in the editor.</li></ol>

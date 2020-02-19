@@ -28,7 +28,7 @@ Private pvtSuffix As String
 Private pvtSuffixRegPiece As ZtRegPiece
 Private pvtLocalizerRegString As String
 Private pvtLocalizerRegPiece As ZtRegPiece
-Private pvtLocalizerIsBeforeSuffix As Boolean
+Private pvtSuffixIsBeforeLocalizer As Boolean
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
@@ -53,7 +53,7 @@ Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valXml As MSXML2.DOMDoc
     valConfig.RegPieceFactory pvtLocalizerRegString, _
                               "ZtConfigXml.zoteroTools.user.citationStyle(" & valStyleName & ").localizerRegString", _
                               pvtLocalizerRegPiece
-    pvtLocalizerIsBeforeSuffix = CBool(.SelectSingleNode("localizerIsBeforeSuffix").Text)
+    pvtSuffixIsBeforeLocalizer = CBool(.SelectSingleNode("suffixIsBeforeLocalizer").Text)
   End With
 
 End Sub
@@ -94,9 +94,9 @@ Public Property Get LocalizerRegPiece() As ZtRegPiece
   
 End Property
 
-Friend Property Get LocalizerIsBeforeSuffix() As Boolean
+Friend Property Get SuffixIsBeforeLocalizer() As Boolean
 
-  LocalizerIsBeforeSuffix = pvtLocalizerIsBeforeSuffix
+  SuffixIsBeforeLocalizer = pvtSuffixIsBeforeLocalizer
   
 End Property
 ' * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

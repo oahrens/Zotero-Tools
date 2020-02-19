@@ -64,7 +64,7 @@
 			<wordIsInvisibleWhileOperation>false</wordIsInvisibleWhileOperation>
 			<debugging>true</debugging>
 			<citationInsertZeroWidthSpace>true</citationInsertZeroWidthSpace>
-			<withBackwardLinking>true</withBackwardLinking>
+			<withBackwardLinking>false</withBackwardLinking>
 		</macro>
 
 <!--   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   - -->
@@ -310,18 +310,18 @@
 			The correct values for all settings are depending on the citation style used by Zotero.
 			Usage and meaning:
 				10    or   12   or   14       in   [10-12, 14]
-				settings for this style:   prefix = ''      suffix = ''      localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+				settings for this style:   prefix = ''      suffix = ''      localizerRegString = not relevant                                suffixIsBeforeLocalizer = not relevant
 
 				10)   or   12)  or   14)      in   10)-12), 14
-				settings for this style:   prefix = ''      suffix = ')'     localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+				settings for this style:   prefix = ''      suffix = ')'     localizerRegString = not relevant                                suffixIsBeforeLocalizer = not relevant
 
 				(10)  or  (12)  or  (14)      in   [(10)-(12), (14)]
-				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = not relevant                                localizerIsBeforeSuffix = not relevant
+				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = not relevant                                suffixIsBeforeLocalizer = not relevant
 
 				(10)                 or
 				(12: ch. B par. 2)   or
 				(14: suppl.)                  in   [(10), (12: ch. B par. 2), (14: suppl.)]
-				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = ':(?: ch\. [A-Z]| par\. \d+| suppl\.)+'     localizerIsBeforeSuffix = True
+				settings for this style:   prefix = '('     suffix = ')'     localizerRegString = ':(?: ch\. [A-Z]| par\. \d+| suppl\.)+'     suffixIsBeforeLocalizer = False
 										   better (more flexible) localizerRegString = ': [^\)]+'     (hits every character until the suffix character is found)
 
 			Any separators or range delimiters, e.g. ',' or '-' are not meant as part of the citation!
@@ -335,13 +335,13 @@
 							 - ': ' before localizers
 							 - german abbreviated localizers
 							 - suffix (right parenthesis) after localizer
-				Example: '1), 3)-5), 7 Kap. 2)'
+				Example: '1), 3)-5), 7: Kap. 2)'
 				Style standards or journals used in: Paediatrica CH
 			-->
 			<prefix></prefix> <!-- *** -->
 			<suffix>)</suffix> <!-- *** -->
 			<localizerRegString>:(?:\u0020|\u00A0)(?:Kap\.|S\.|B\.|Sp\.|Abb\.|Fol\.|Nr\.|Z\.|Anm\.|op\.|Abs\.|Teil|Abschn\.|s\. v\.|Bd\.|V\.)[^\)]+</localizerRegString>
-			<localizerIsBeforeSuffix>true</localizerIsBeforeSuffix>
+			<suffixIsBeforeLocalizer>false</suffixIsBeforeLocalizer>
 		</citationStyle>
 		<citationStyle name="2">
 			<!--
@@ -355,7 +355,7 @@
 			<prefix></prefix> <!-- *** -->
 			<suffix></suffix> <!-- *** -->
 			<localizerRegString></localizerRegString> <!--not relevant-->
-			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix> <!--not relevant-->
+			<suffixIsBeforeLocalizer>false</suffixIsBeforeLocalizer> <!--not relevant-->
 		</citationStyle>
 		<citationStyle name="3">
 			<!--
@@ -370,7 +370,7 @@
 			<prefix></prefix> <!-- *** -->
 			<suffix></suffix> <!-- *** -->
 			<localizerRegString>\((?:chap|p|bk|col|fig|fol|no|l|n|op|para|pt|sec|sv|vol|v)[^\)]+\)</localizerRegString>
-			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix> <!--not relevant-->
+			<suffixIsBeforeLocalizer>false</suffixIsBeforeLocalizer> <!--not relevant-->
 		</citationStyle>
 		<citationStyle name="4">
 			<!--
@@ -386,7 +386,7 @@
 			<prefix>[</prefix> <!-- *** -->
 			<suffix>]</suffix> <!-- *** -->
 			<localizerRegString>,(?:\u0020|\u00A0)(?:Chap\.|p\.|Bk\.|Col\.|Fig\.|Fol\.|No\.|L\.|N\.|Op\.|Para\.|Pt\.|Sec\.|S\. v\.|Vol\.|V\.)[^\]]+</localizerRegString>
-			<localizerIsBeforeSuffix>true</localizerIsBeforeSuffix>
+			<suffixIsBeforeLocalizer>false</suffixIsBeforeLocalizer>
 		</citationStyle>
 		<citationStyle name="5">
 			<!--
@@ -399,7 +399,7 @@
 			<prefix></prefix> <!-- *** -->
 			<suffix></suffix> <!-- *** -->
 			<localizerRegString></localizerRegString>
-			<localizerIsBeforeSuffix>false</localizerIsBeforeSuffix>
+			<suffixIsBeforeLocalizer>false</suffixIsBeforeLocalizer>
 		</citationStyle>
 
 		<!--
@@ -817,13 +817,13 @@
 	-->
 	<final>
 		<citation>
-			<resultRegString localizerIsBeforeSuffix="true"><![CDATA[
+			<resultRegString suffixIsBeforeLocalizer="true"><![CDATA[
 				(?<numbering>{user.citationStyle.prefixRegPiece.value}
 					(?<number>\d+){user.citationStyle.suffixRegPiece.value}
 					(?:{user.citationStyle.localizerRegPiece.value})?)
 				(?<rangeDelimiter>{user.citationGroupStyle.rangeDelimiterRegPiece.value})?
 			]]></resultRegString>
-			<resultRegString localizerIsBeforeSuffix="false"><![CDATA[
+			<resultRegString suffixIsBeforeLocalizer="false"><![CDATA[
 				(?<numbering>{user.citationStyle.prefixRegPiece.value}
 					(?<number>\d+)(?:{user.citationStyle.localizerRegPiece.value})?
 					{user.citationStyle.suffixRegPiece.value})

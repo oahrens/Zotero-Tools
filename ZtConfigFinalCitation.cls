@@ -36,15 +36,15 @@ Friend Sub Initialize(ByVal valConfig As ZtConfig, ByVal valXml As MSXML2.DOMDoc
   
   Set locNode = valXml.SelectSingleNode("/zoteroTools/final/citation")
   With locNode
-    If valConfig.User.CitationStyle.LocalizerIsBeforeSuffix Then
+    If valConfig.User.CitationStyle.SuffixIsBeforeLocalizer Then
       valConfig.RegExpFactory pvtResultRegExp, _
                               "citation", _
-                              valConfig.ResolveTextElement(.SelectSingleNode("resultRegString[@localizerIsBeforeSuffix='true']"), True), _
+                              valConfig.ResolveTextElement(.SelectSingleNode("resultRegString[@suffixIsBeforeLocalizer='true']"), True), _
                               True
     Else
       valConfig.RegExpFactory pvtResultRegExp, _
                               "citation", _
-                              valConfig.ResolveTextElement(.SelectSingleNode("resultRegString[@localizerIsBeforeSuffix='false']"), True), _
+                              valConfig.ResolveTextElement(.SelectSingleNode("resultRegString[@suffixIsBeforeLocalizer='false']"), True), _
                               True
     End If
     valConfig.RegExpFactory pvtHtmlTagsRegExp, _

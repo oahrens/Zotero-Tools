@@ -102,7 +102,7 @@ INSTALLATION
 
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-EXCEL SETTINGS
+MICROSOFT WORD SETTINGS
 
 	The following libraries must be referenced (inside the VBA editor: Tools -> References):
 		Visual Basic For Applications (set automatically)
